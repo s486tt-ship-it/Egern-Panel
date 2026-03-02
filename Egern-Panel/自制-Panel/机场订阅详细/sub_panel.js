@@ -1,11 +1,14 @@
 /**
- * Egern 机场流量面板展示脚本
- * 
- * 功能：从持久化存储中读取订阅流量信息，格式化展示
- * 每个机场的：已用流量、剩余流量、总流量、到期时间。
- * 
- * 面板配置（YAML 中 panels 段）调用此脚本时，
- * 通过 $done({ content: "...", icon: "...", color: "..." }) 返回面板内容。
+ * Egern 机场流量面板展示脚本 v2.0
+ *
+ * 功能：
+ *  1. 读取 $argument 中用户配置的机场订阅链接
+ *  2. 用 $httpClient 主动拉取每个订阅的响应头
+ *  3. 解析 subscription-userinfo 获取流量和到期信息
+ *  4. 格式化后通过 $done() 展示在 Egern 面板中
+ *
+ * 配置方式：
+ *  在 Egern 模块"编辑模板参数"中填写机场名称和订阅链接
  */
 
 ; (function () {
@@ -15,149 +18,185 @@
     // 辅助函数
     // =========================================================
 
-    /**
-     * 将字节数格式化为人类可读字符串
-     * @param {number} bytes
-     * @returns {string}
-     */
+    /** 字节 → 人类可读 */
     function formatBytes(bytes) {
         if (!bytes || bytes <= 0) return "0 B";
-        const units = ["B", "KB", "MB", "GB", "TB"];
-        let i = 0;
-        let value = bytes;
-        while (value >= 1024 && i < units.length - 1) {
-            value /= 1024;
-            i++;
-        }
-        return value.toFixed(2) + " " + units[i];
+        var units = ["B", "KB", "MB", "GB", "TB"];
+        var i = 0;
+        var v = Number(bytes);
+        while (v >= 1024 && i < units.length - 1) { v /= 1024; i++; }
+        return v.toFixed(2) + " " + units[i];
     }
 
-    /**
-     * 将 Unix 时间戳格式化为日期字符串
-     * @param {number} ts  Unix 秒时间戳
-     * @returns {string}
-     */
+    /** Unix 时间戳 → 日期字符串 */
     function formatDate(ts) {
-        if (!ts || ts <= 0) return "未知";
-        const d = new Date(ts * 1000);
-        const yyyy = d.getFullYear();
-        const mm = String(d.getMonth() + 1).padStart(2, "0");
-        const dd = String(d.getDate()).padStart(2, "0");
-        return `${yyyy}-${mm}-${dd}`;
+        if (!ts || ts <= 0) return "永久有效";
+        var d = new Date(Number(ts) * 1000);
+        var yy = d.getFullYear();
+        var mm = String(d.getMonth() + 1).padStart(2, "0");
+        var dd = String(d.getDate()).padStart(2, "0");
+        return yy + "-" + mm + "-" + dd;
     }
 
-    /**
-     * 计算距离到期还有多少天
-     * @param {number} expire Unix 秒时间戳
-     * @returns {string}
-     */
-    function daysLeft(expire) {
-        if (!expire || expire <= 0) return "永久";
-        const now = Math.floor(Date.now() / 1000);
-        const diff = expire - now;
+    /** 剩余天数文字 */
+    function daysLeft(ts) {
+        if (!ts || ts <= 0) return "永久";
+        var now = Math.floor(Date.now() / 1000);
+        var diff = Number(ts) - now;
         if (diff <= 0) return "已过期";
-        const days = Math.ceil(diff / 86400);
-        return `${days} 天`;
+        return Math.ceil(diff / 86400) + " 天";
     }
 
-    /**
-     * 生成进度条字符串（ASCII 风格，10 格）
-     * @param {number} used    已用字节
-     * @param {number} total   总字节
-     * @param {number} width   进度条宽度（字符数）
-     * @returns {string}
-     */
-    function progressBar(used, total, width) {
+    /** 解析 subscription-userinfo 字符串 */
+    function parseUserInfo(str) {
+        var result = {};
+        (str || "").split(";").forEach(function (pair) {
+            var parts = pair.trim().split("=");
+            if (parts.length === 2) result[parts[0].trim()] = Number(parts[1].trim());
+        });
+        return result;
+    }
+
+    /** ASCII 进度条 */
+    function bar(used, total, width) {
         width = width || 10;
         if (!total || total <= 0) return "░".repeat(width);
-        const ratio = Math.min(used / total, 1);
-        const filled = Math.round(ratio * width);
+        var ratio = Math.min(used / total, 1);
+        var filled = Math.round(ratio * width);
         return "▓".repeat(filled) + "░".repeat(width - filled);
     }
 
-    // =========================================================
-    // 读取持久化存储中的订阅列表
-    // =========================================================
-    let subList = [];
-    try {
-        const stored = $persistentStore.read("egern_sub_list");
-        if (stored) {
-            subList = JSON.parse(stored);
-            if (!Array.isArray(subList)) subList = [];
-        }
-    } catch (e) {
-        console.log("[SubPanel] 读取数据失败:", e);
+    /** 流量 emoji */
+    function trafficEmoji(used, total) {
+        if (!total || total <= 0) return "⚪";
+        var r = used / total;
+        if (r >= 0.9) return "🔴";
+        if (r >= 0.75) return "🟡";
+        return "🟢";
+    }
+
+    /** 到期 emoji */
+    function expireEmoji(ts) {
+        if (!ts || ts <= 0) return "♾️";
+        var now = Math.floor(Date.now() / 1000);
+        var diff = Number(ts) - now;
+        if (diff <= 0) return "❌";
+        if (diff < 86400 * 7) return "⚠️";
+        return "✅";
     }
 
     // =========================================================
-    // 构建面板内容
+    // 读取 $argument 中配置的机场列表
     // =========================================================
-    if (subList.length === 0) {
-        // 暂无数据时的提示
+    var airports = [];
+    var argNames = ["airport1", "airport2", "airport3"];
+    argNames.forEach(function (key) {
+        var url = ($argument && $argument[key + "_url"]) || "";
+        var name = ($argument && $argument[key + "_name"]) || key;
+        if (url && url.trim().length > 0) {
+            airports.push({ name: name.trim(), url: url.trim() });
+        }
+    });
+
+    // 未配置任何机场时的提示
+    if (airports.length === 0) {
         $done({
             title: "🛫 机场流量面板",
-            content: "暂无订阅数据\n\n请先更新订阅以获取流量信息。\n\n提示：确保订阅链接已配置脚本拦截。",
+            content: "⚙️ 尚未配置订阅链接\n\n请前往：\n模块 → 机场流量面板 → 编辑模板参数\n\n填写机场名称和订阅链接后返回此面板刷新。",
             icon: "airplane",
-            color: "#5856D6"
+            color: "#8E8E93"
         });
         return;
     }
 
-    // 遍历所有订阅，拼接面板文本
-    const lines = [];
+    // =========================================================
+    // 并发拉取每个机场的订阅头信息
+    // =========================================================
+    var results = new Array(airports.length);
+    var pending = airports.length;
 
-    subList.forEach(function (sub, idx) {
-        const name = sub.key || `订阅 ${idx + 1}`;
-        const used = sub.used || 0;
-        const remain = sub.remain || 0;
-        const total = sub.total || 0;
-        const expire = sub.expire || 0;
-        const bar = progressBar(used, total, 10);
-        const usedPct = total > 0 ? ((used / total) * 100).toFixed(1) : "0.0";
+    function onAllDone() {
+        // 生成面板文本
+        var lines = [];
 
-        // 到期状态 emoji
-        const now = Math.floor(Date.now() / 1000);
-        let expireEmoji = "✅";
-        if (expire > 0) {
-            const diff = expire - now;
-            if (diff <= 0) expireEmoji = "❌";
-            else if (diff < 86400 * 7) expireEmoji = "⚠️";
-        }
+        results.forEach(function (r, idx) {
+            var name = airports[idx].name;
 
-        // 流量状态 emoji
-        let trafficEmoji = "🟢";
-        if (total > 0) {
-            const ratio = used / total;
-            if (ratio >= 0.9) trafficEmoji = "🔴";
-            else if (ratio >= 0.75) trafficEmoji = "🟡";
-        }
+            if (r.error) {
+                lines.push("━━━ " + name + " ━━━");
+                lines.push("❗ 获取失败：" + r.error);
+                if (idx < results.length - 1) lines.push("");
+                return;
+            }
 
-        // 每个订阅信息块
-        lines.push(`━━━ ${name} ━━━`);
-        lines.push(`${trafficEmoji} [${bar}] ${usedPct}%`);
-        lines.push(`  已用：${formatBytes(used)}`);
-        lines.push(`  剩余：${formatBytes(remain)}`);
-        lines.push(`  总量：${formatBytes(total)}`);
-        lines.push(`${expireEmoji} 到期：${formatDate(expire)}（余 ${daysLeft(expire)}）`);
+            var upload = r.upload || 0;
+            var download = r.download || 0;
+            var total = r.total || 0;
+            var expire = r.expire || 0;
+            var used = upload + download;
+            var remain = Math.max(total - used, 0);
+            var pct = total > 0 ? ((used / total) * 100).toFixed(1) : "0.0";
 
-        if (idx < subList.length - 1) {
-            lines.push(""); // 订阅间空行
-        }
+            lines.push("━━━ " + name + " ━━━");
+            lines.push(trafficEmoji(used, total) + " [" + bar(used, total, 10) + "] " + pct + "%");
+            lines.push("  已用：" + formatBytes(used));
+            lines.push("  剩余：" + formatBytes(remain));
+            lines.push("  总量：" + formatBytes(total));
+            lines.push(expireEmoji(expire) + " 到期：" + formatDate(expire) + "（余 " + daysLeft(expire) + "）");
+
+            if (idx < results.length - 1) lines.push("");
+        });
+
+        var now = new Date();
+        var hh = String(now.getHours()).padStart(2, "0");
+        var mi = String(now.getMinutes()).padStart(2, "0");
+        lines.push("");
+        lines.push("🕐 更新于 " + hh + ":" + mi + "  点击右上角 ↻ 刷新");
+
+        $done({
+            title: "🛫 机场流量面板",
+            content: lines.join("\n"),
+            icon: "airplane.departure",
+            color: "#5856D6"
+        });
+    }
+
+    airports.forEach(function (airport, idx) {
+        $httpClient.get(
+            {
+                url: airport.url,
+                headers: {
+                    "User-Agent": "Egern/2.16",
+                    "Accept": "*/*"
+                },
+                timeout: 15
+            },
+            function (error, response) {
+                if (error) {
+                    results[idx] = { error: String(error) };
+                } else {
+                    // 大小写不敏感地查找 subscription-userinfo 头
+                    var info = "";
+                    var headers = response.headers || {};
+                    Object.keys(headers).forEach(function (k) {
+                        if (k.toLowerCase() === "subscription-userinfo") {
+                            info = headers[k];
+                        }
+                    });
+                    var parsed = parseUserInfo(info);
+                    results[idx] = {
+                        upload: parsed.upload || 0,
+                        download: parsed.download || 0,
+                        total: parsed.total || 0,
+                        expire: parsed.expire || 0
+                    };
+                }
+
+                // 所有请求完成后输出面板
+                pending--;
+                if (pending === 0) onAllDone();
+            }
+        );
     });
 
-    // 更新时间
-    const now = new Date();
-    const timeStr = `${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`;
-    lines.push("");
-    lines.push(`🕐 更新于 ${timeStr}`);
-
-    // =========================================================
-    // 返回面板内容
-    // =========================================================
-    $done({
-        title: "🛫 机场流量面板",
-        content: lines.join("\n"),
-        icon: "airplane.departure",
-        color: "#5856D6"
-    });
 })();

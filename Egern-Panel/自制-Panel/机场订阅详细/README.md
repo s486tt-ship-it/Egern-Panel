@@ -1,58 +1,58 @@
 # 机场订阅详细 — Egern 2.16 流量面板
 
-> 查看机场订阅的**已用流量**、**剩余流量**和**到期时间**。支持同时显示多个机场。
+> 在 Egern 面板中查看机场订阅的**已用流量**、**剩余流量**和**到期时间**。  
+> 支持最多 3 个机场，点击面板刷新按钮即可主动拉取最新数据。
+
+---
 
 ## 文件说明
 
 | 文件 | 用途 |
 |------|------|
-| `SubPanel.yaml` | Egern 模块配置，导入此文件即可启用面板 |
-| `sub_store.js` | HTTP 响应拦截脚本，解析 `subscription-userinfo` 头并存储数据 |
-| `sub_panel.js` | 面板展示脚本，读取存储数据并格式化输出 |
+| `SubPanel.yaml` | Egern 模块配置（含模板参数定义） |
+| `sub_panel.js` | 面板脚本，主动拉取订阅头信息并展示 |
+| `sub_store.js` | 被动拦截脚本，更新订阅时自动采集数据 |
 
 ---
 
-## 工作原理
+## 安装方式
 
-机场订阅服务器在响应头中携带 `subscription-userinfo` 字段：
+### 远程模块订阅（推荐）
 
-```
-subscription-userinfo: upload=1073741824; download=5368709120; total=107374182400; expire=1780000000
-```
-
-`sub_store.js` 拦截此响应头 → 解析并存入 `$persistentStore` → `sub_panel.js` 读取数据展示到面板。
-
----
-
-## 安装步骤
-
-### 方式一：导入本地 YAML 模块（推荐）
-
-1. 将 `SubPanel.yaml` 和 `sub_store.js`、`sub_panel.js` 下载到 iPhone 本地（建议放在 iCloud Drive）
-2. 修改 `SubPanel.yaml` 中的 `script_url`，改为脚本文件的**绝对路径**，例如：
-   ```yaml
-   script_url: /var/mobile/Library/Mobile Documents/com~apple~CloudDocs/Egern/scripts/sub_panel.js
-   ```
-3. Egern → **模块** → **+** → **本地文件** → 选择 `SubPanel.yaml`
-4. 启用模块 ✅
-
-### 方式二：使用远程 URL
-
-将以下 URL 粘贴到 Egern 模块输入框：
+在 Egern 中依次操作：  
+**模块 → + → 输入 URL**，填入：
 
 ```
 https://raw.githubusercontent.com/s486tt-ship-it/Egern-Panel/main/Egern-Panel/%E8%87%AA%E5%88%B6-Panel/%E6%9C%BA%E5%9C%BA%E8%AE%A2%E9%98%85%E8%AF%A6%E7%BB%86/SubPanel.yaml
 ```
 
-> ⚠️ 使用远程 URL 方式时，`SubPanel.yaml` 中的 `script_url` 也需要改为远程 URL（raw 链接）。
+---
+
+## 配置模板参数（关键步骤）
+
+安装模块后，进入 **编辑模板参数**，填写以下 6 个字段：
+
+| 参数名 | 说明 | 示例 |
+|--------|------|------|
+| `AIRPORT1_NAME` | 机场1的显示名称 | `我的主力机场` |
+| `AIRPORT1_URL` | 机场1的订阅链接 | `https://example.com/sub?token=xxx` |
+| `AIRPORT2_NAME` | 机场2的显示名称（可留空） | `备用机场` |
+| `AIRPORT2_URL` | 机场2的订阅链接（可留空） | `https://other.com/sub?token=yyy` |
+| `AIRPORT3_NAME` | 机场3的显示名称（可留空） | — |
+| `AIRPORT3_URL` | 机场3的订阅链接（可留空） | — |
+
+> 若只有 1 个机场，只填 `AIRPORT1_NAME` 和 `AIRPORT1_URL`，其余留空即可。
 
 ---
 
 ## 使用方法
 
-1. 导入模块后，前往 Egern **订阅**页，点击更新按钮更新任意机场订阅
-2. 脚本自动拦截响应并解析流量信息
-3. 前往 Egern **面板**页查看结果
+1. 安装并配置好模板参数后
+2. 前往 Egern **首页 → 面板**，找到「🛫 机场流量面板」
+3. 点击右上角 **↻ 刷新**，脚本会主动请求订阅链接获取流量数据
+4. 面板自动展示每个机场的流量和到期情况
+
+> **也可被动触发**：在 Egern 中更新订阅时，`sub_store.js` 会自动拦截并存储数据（作为备用机制）。
 
 ---
 
@@ -60,50 +60,47 @@ https://raw.githubusercontent.com/s486tt-ship-it/Egern-Panel/main/Egern-Panel/%E
 
 ```
 🛫 机场流量面板
-━━━ airport.example.com ━━━
+━━━ 我的主力机场 ━━━
 🟡 [▓▓▓▓▓▓▓░░░] 73.2%
   已用：78.52 GB
   剩余：28.72 GB
   总量：107.37 GB
 ✅ 到期：2026-05-20（余 77 天）
 
-━━━ another.airport.com ━━━
+━━━ 备用机场 ━━━
 🟢 [▓▓░░░░░░░░] 21.4%
   已用：22.98 GB
   剩余：84.39 GB
   总量：107.37 GB
 ⚠️ 到期：2026-03-10（余 7 天）
 
-🕐 更新于 07:15
+🕐 更新于 07:15  点击右上角 ↻ 刷新
 ```
 
-**状态图标**：
-- 流量使用：🟢 < 75% | 🟡 75~90% | 🔴 > 90%  
-- 到期状态：✅ 正常 | ⚠️ 7 天内到期 | ❌ 已过期
+**状态图标说明：**
 
----
-
-## 自定义匹配规则
-
-如果默认规则无法匹配你的机场订阅链接，请修改 `SubPanel.yaml` 中的 `match` 字段：
-
-```yaml
-# 精确匹配你的机场域名（推荐）
-match: "^https://your-airport-domain\\.com/.*"
-
-# 或者使用宽泛匹配（匹配所有 HTTPS 请求，性能较差）
-match: "^https://.*"
-```
+| 图标 | 含义 |
+|------|------|
+| 🟢 | 流量已用 < 75% |
+| 🟡 | 流量已用 75~90% |
+| 🔴 | 流量已用 > 90% |
+| ✅ | 订阅未到期 |
+| ⚠️ | 7 天内到期 |
+| ❌ | 已过期 |
+| ❗ | 链接获取失败 |
 
 ---
 
 ## 常见问题
 
-**Q：面板显示"暂无订阅数据"？**  
-A：请先更新订阅。如果仍无数据，说明机场订阅链接不包含 `subscription-userinfo` 头（部分机场不支持此标准）。
+**Q：填了订阅链接但拉取失败（显示 ❗ 获取失败）？**  
+A：部分机场订阅链接需要特定 User-Agent 才能响应，或链接本身已失效，请检查链接是否能在浏览器中正常打开。
 
-**Q：如何支持所有机场？**  
-A：修改 `match` 正则，确保覆盖你的机场订阅 URL。
+**Q：面板显示⚙️"尚未配置"？**  
+A：请检查模板参数中 `AIRPORT1_URL` 是否已填写完整链接。
 
-**Q：数据何时更新？**  
-A：每次在 Egern 中点击更新订阅时自动更新，面板不会主动请求网络。
+**Q：面板显示流量数据但全为 0？**  
+A：该机场订阅链接可能不支持 `subscription-userinfo` 标准响应头，请联系机场服务商确认。
+
+**Q：如何让面板定时自动刷新？**  
+A：修改 `SubPanel.yaml` 中 `interval` 字段（单位：秒），例如 `interval: 3600` 为每小时刷新一次。
