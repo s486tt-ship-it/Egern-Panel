@@ -1,0 +1,46 @@
+name: "机场订阅流量面板"
+description: "显示机场订阅的流量使用情况和到期时间。请在模块参数中设置您的订阅链接。"
+author: "Trae"
+icon: "airplane.circle"
+homepage: "https://github.com/Trae"
+
+compat_arguments:
+  AIRPORT1_NAME: "机场1"
+  AIRPORT1_URL: ""
+  AIRPORT2_NAME: "机场2"
+  AIRPORT2_URL: ""
+
+panels:
+  - name: airport_panel_1
+    title: "{AIRPORT1_NAME}"
+    content: "未配置订阅"
+    icon: "airplane.circle"
+  - name: airport_panel_2
+    title: "{AIRPORT2_NAME}"
+    content: "未配置订阅"
+    icon: "airplane.circle"
+
+scriptings:
+  - schedule:
+      name: update_airport_1
+      cron: "0 * * * *"
+      script_url: "AirportSub.js"
+      arguments:
+        url: "{AIRPORT1_URL}"
+        panel_name: "airport_panel_1"
+        name: "{AIRPORT1_NAME}"
+  - schedule:
+      name: update_airport_2
+      cron: "0 * * * *"
+      script_url: "AirportSub.js"
+      arguments:
+        url: "{AIRPORT2_URL}"
+        panel_name: "airport_panel_2"
+        name: "{AIRPORT2_NAME}"
+  - generic:
+      name: manual_update_airport
+      script_url: "AirportSub.js"
+      arguments:
+        url: "{AIRPORT1_URL}"
+        panel_name: "airport_panel_1"
+        name: "{AIRPORT1_NAME}"
