@@ -12,7 +12,7 @@ compat_arguments:
 
 panels:
   - name: airport_panel_1
-    title: "{AIRPORT1_NAME}"
+    title: "机场订阅 1"
     content: "正在获取数据..."
     icon: "airplane.circle"
     script_url: "https://raw.githubusercontent.com/s486tt-ship-it/Egern-Panel/main/panel/Subscription%20Panel/AirportSub.js"
@@ -22,7 +22,7 @@ panels:
       name: "{AIRPORT1_NAME}"
       panel_name: "airport_panel_1"
   - name: airport_panel_2
-    title: "{AIRPORT2_NAME}"
+    title: "机场订阅 2"
     content: "正在获取数据..."
     icon: "airplane.circle"
     script_url: "https://raw.githubusercontent.com/s486tt-ship-it/Egern-Panel/main/panel/Subscription%20Panel/AirportSub.js"

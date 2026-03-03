@@ -4,7 +4,7 @@
  * 通过解析订阅链接的 subscription-userinfo 响应头来显示流量和到期时间。
  * 支持通过脚本参数传递订阅地址和面板名称。
  * 
- * v1.0.5 - 恢复 $panel.update 方式并添加详细调试日志。
+ * v1.0.7 - 脚本启动时立即尝试更新面板标题，并优化 URL 校验逻辑。
  */
 
 const subUrl = $argument.url || "";
@@ -13,8 +13,11 @@ const panelName = $argument.panel_name || "airport_panel_1";
 
 console.log(`[机场面板] 脚本启动: ${airportName}, URL: ${subUrl}, Panel: ${panelName}`);
 
+// 启动时立即尝试设置标题为自定义名称
+updatePanel(airportName, "正在获取数据...");
+
 // 检查订阅链接是否为空
-if (!subUrl || subUrl.trim() === "" || subUrl.includes("{AIRPORT")) {
+if (!subUrl || subUrl.trim() === "" || subUrl.includes("{AIRPORT") || subUrl.includes("{VAR")) {
     console.log("[机场面板] 订阅链接未配置或无效");
     updatePanel(airportName, "⚠️ 未配置订阅链接\n请在 Egern 模块参数中填写正确的 URL。");
     $done();
