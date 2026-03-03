@@ -12,31 +12,27 @@ compat_arguments:
 
 panels:
   - name: airport_panel_1
-    title: "机场1"
-    content: "等待更新..."
+    title: "{AIRPORT1_NAME}"
+    content: "正在获取数据..."
     icon: "airplane.circle"
+    script_url: "https://raw.githubusercontent.com/s486tt-ship-it/Egern-Panel/main/panel/Subscription%20Panel/AirportSub.js"
+    update_interval: 3600
+    arguments:
+      url: "{AIRPORT1_URL}"
+      name: "{AIRPORT1_NAME}"
+      panel_name: "airport_panel_1"
   - name: airport_panel_2
-    title: "机场2"
-    content: "等待更新..."
+    title: "{AIRPORT2_NAME}"
+    content: "正在获取数据..."
     icon: "airplane.circle"
+    script_url: "https://raw.githubusercontent.com/s486tt-ship-it/Egern-Panel/main/panel/Subscription%20Panel/AirportSub.js"
+    update_interval: 3600
+    arguments:
+      url: "{AIRPORT2_URL}"
+      name: "{AIRPORT2_NAME}"
+      panel_name: "airport_panel_2"
 
 scriptings:
-  - schedule:
-      name: update_airport_1
-      cron: "0 * * * *"
-      script_url: "https://raw.githubusercontent.com/s486tt-ship-it/Egern-Panel/main/panel/Subscription%20Panel/AirportSub.js"
-      arguments:
-        url: "{AIRPORT1_URL}"
-        panel_name: "airport_panel_1"
-        name: "{AIRPORT1_NAME}"
-  - schedule:
-      name: update_airport_2
-      cron: "0 * * * *"
-      script_url: "https://raw.githubusercontent.com/s486tt-ship-it/Egern-Panel/main/panel/Subscription%20Panel/AirportSub.js"
-      arguments:
-        url: "{AIRPORT2_URL}"
-        panel_name: "airport_panel_2"
-        name: "{AIRPORT2_NAME}"
   - generic:
       name: manual_update_airport
       script_url: "https://raw.githubusercontent.com/s486tt-ship-it/Egern-Panel/main/panel/Subscription%20Panel/AirportSub.js"

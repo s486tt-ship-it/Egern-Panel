@@ -6,47 +6,57 @@
  */
 
 const subUrl = $argument.url;
-const panelName = $argument.panel_name || "airport_panel";
+const panelName = $argument.panel_name || "airport_panel_1";
 const airportName = $argument.name || "我的机场";
+
+console.log(`[机场面板] 开始获取数据: ${airportName}, URL: ${subUrl}`);
 
 // 检查订阅链接是否为空或为未替换的占位符
 if (!subUrl || subUrl.trim() === "" || subUrl.indexOf("{") !== -1) {
-    console.log("未配置有效的订阅链接: " + subUrl);
-    updatePanel(airportName, "未配置订阅链接，请在模块参数中设置。");
+    console.log("[机场面板] 订阅链接未配置或无效");
+    updatePanel(airportName, "⚠️ 未配置订阅链接\n请在 Egern 模块参数中填写正确的 URL。");
     $done();
-    return;
-}
+} else {
+    const options = {
+        url: subUrl,
+        headers: {
+            'User-Agent': 'Clash' // 使用 Clash UA 以确保机场返回流量信息
+        },
+        timeout: 10000
+    };
 
-const options = {
-    url: subUrl,
-    headers: {
-        'User-Agent': 'Clash' // 使用 Clash UA 以确保机场返回流量信息
-    }
-};
-
-$httpClient.get(options, (error, response, data) => {
-    if (error) {
-        console.log("获取订阅失败: " + error);
-        updatePanel(airportName, "❌ 连接失败\n无法获取订阅信息，请检查链接或网络。");
-        $done();
-        return;
-    }
-
-    // 获取流量信息头 (不区分大小写)
-    let infoHeader = null;
-    for (let key in response.headers) {
-        if (key.toLowerCase() === 'subscription-userinfo') {
-            infoHeader = response.headers[key];
-            break;
+    $httpClient.get(options, (error, response, data) => {
+        if (error) {
+            console.log(`[机场面板] 获取订阅失败: ${error}`);
+            updatePanel(airportName, `❌ 连接失败\n无法获取订阅信息，请检查网络。\n${error}`);
+            $done();
+            return;
         }
-    }
-    
-    if (!infoHeader) {
-        console.log("响应头中未找到 subscription-userinfo");
-        updatePanel(airportName, "⚠️ 无法解析流量信息\n该订阅链接未提供标准流量统计头。");
+
+        // 获取流量信息头 (不区分大小写)
+        let infoHeader = null;
+        for (let key in response.headers) {
+            if (key.toLowerCase() === 'subscription-userinfo') {
+                infoHeader = response.headers[key];
+                break;
+            }
+        }
+        
+        if (!infoHeader) {
+            console.log("[机场面板] 响应头中未找到 subscription-userinfo");
+            updatePanel(airportName, "⚠️ 无法解析流量信息\n该订阅链接未提供标准流量统计头。");
+            $done();
+            return;
+        }
+
+        console.log(`[机场面板] 成功获取流量信息: ${infoHeader}`);
+        const info = parseUserInfo(infoHeader);
+        const content = formatPanelContent(info);
+        
+        updatePanel(airportName, content);
         $done();
-        return;
-    }
+    });
+}
 
     const info = parseUserInfo(infoHeader);
     const content = formatPanelContent(info);
