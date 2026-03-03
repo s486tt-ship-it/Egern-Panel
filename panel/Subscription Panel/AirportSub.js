@@ -58,13 +58,6 @@ if (!subUrl || subUrl.trim() === "" || subUrl.indexOf("{") !== -1) {
     });
 }
 
-    const info = parseUserInfo(infoHeader);
-    const content = formatPanelContent(info);
-    
-    updatePanel(airportName, content);
-    $done();
-});
-
 /**
  * 解析 subscription-userinfo 头
  * 格式: upload=100; download=200; total=1000; expire=1672531200
@@ -73,8 +66,10 @@ function parseUserInfo(header) {
     const info = {};
     const items = header.split(';');
     items.forEach(item => {
-        const [key, value] = item.split('=').map(s => s.trim());
-        if (key && value) {
+        const parts = item.split('=');
+        if (parts.length === 2) {
+            const key = parts[0].trim();
+            const value = parts[1].trim();
             info[key] = parseFloat(value);
         }
     });
