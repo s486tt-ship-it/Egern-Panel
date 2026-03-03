@@ -12,7 +12,7 @@ compat_arguments:
 
 panels:
   - name: airport_panel_1
-    title: "机场订阅 1"
+    title: "正在获取..."
     content: "正在获取数据..."
     icon: "airplane.circle"
     script_url: "https://raw.githubusercontent.com/s486tt-ship-it/Egern-Panel/main/panel/Subscription%20Panel/AirportSub.js"
@@ -20,9 +20,8 @@ panels:
     arguments:
       url: "{AIRPORT1_URL}"
       name: "{AIRPORT1_NAME}"
-      panel_name: "airport_panel_1"
   - name: airport_panel_2
-    title: "机场订阅 2"
+    title: "正在获取..."
     content: "正在获取数据..."
     icon: "airplane.circle"
     script_url: "https://raw.githubusercontent.com/s486tt-ship-it/Egern-Panel/main/panel/Subscription%20Panel/AirportSub.js"
@@ -30,7 +29,6 @@ panels:
     arguments:
       url: "{AIRPORT2_URL}"
       name: "{AIRPORT2_NAME}"
-      panel_name: "airport_panel_2"
 
 scriptings:
   - generic:
@@ -38,5 +36,4 @@ scriptings:
       script_url: "https://raw.githubusercontent.com/s486tt-ship-it/Egern-Panel/main/panel/Subscription%20Panel/AirportSub.js"
       arguments:
         url: "{AIRPORT1_URL}"
-        panel_name: "airport_panel_1"
         name: "{AIRPORT1_NAME}"
