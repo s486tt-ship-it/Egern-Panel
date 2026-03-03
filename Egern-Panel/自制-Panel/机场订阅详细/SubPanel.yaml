@@ -20,7 +20,7 @@ compat_arguments:
   AIRPORT3_NAME: 机场3
   AIRPORT3_URL: ""
 
-compat_arguments_desc:
+compat_arguments_desc: |
   AIRPORT1_NAME: 机场1的显示名称（可自定义，如"我的机场"）
   AIRPORT1_URL: 机场1的订阅链接（完整 URL，必填）
   AIRPORT2_NAME: 机场2的显示名称（若只有1个机场可留空）
