@@ -5,6 +5,9 @@
 # 机场订阅流量信息面板 (Egern Module)
 订阅链接：https://raw.githubusercontent.com/s486tt-ship-it/Egern-Panel/main/Egern-Panel/%E8%87%AA%E5%88%B6-Panel/%E6%9C%BA%E5%9C%BA%E8%AE%A2%E9%98%85%E9%9D%A2%E6%9D%BF/airport_panel.yaml
 
+
+订阅链接2:https://raw.githubusercontent.com/s486tt-ship-it/Egern-Panel/refs/heads/main/Egern-Panel/%E8%87%AA%E5%88%B6-Panel/%E6%9C%BA%E5%9C%BA%E8%AE%A2%E9%98%85%E9%9D%A2%E6%9D%BF/airport_panel.yaml
+
 这是一个专门为 [Egern](https://apps.apple.com/app/egern/id1616145031) 设计的插件模块，旨在通过面板直观地展示机场订阅的使用状态。
 
 ## 🌟 功能介绍
