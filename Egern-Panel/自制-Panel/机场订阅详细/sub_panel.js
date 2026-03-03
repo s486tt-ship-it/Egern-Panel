@@ -1,246 +1,163 @@
 /**
- * 机场订阅详细 — Egern 2.16 流量面板 v2.4
- *
- * 功能：
- *  1. 从 $argument 读取由 YAML compat_arguments 透传下来的机场配置
- *  2. 使用 Clash UA 主动探测最新流量 (2.5秒超时机制确保面板不白屏)
- *  3. 如果超时或网络错误，自动降级为展示本地持久化缓存
+ * Egern 机场流量面板展示脚本
+ * 
+ * 功能：从持久化存储中读取订阅流量信息，格式化展示
+ * 每个机场的：已用流量、剩余流量、总流量、到期时间。
+ * 
+ * 面板配置（YAML 中 panels 段）调用此脚本时，
+ * 通过 $done({ content: "...", icon: "...", color: "..." }) 返回面板内容。
  */
 
 ; (function () {
     "use strict";
 
     // =========================================================
-    // 1. 基础工具函数
+    // 辅助函数
     // =========================================================
 
+    /**
+     * 将字节数格式化为人类可读字符串
+     * @param {number} bytes
+     * @returns {string}
+     */
     function formatBytes(bytes) {
         if (!bytes || bytes <= 0) return "0 B";
-        var units = ["B", "KB", "MB", "GB", "TB"];
-        var i = 0;
-        var v = Number(bytes);
-        while (v >= 1024 && i < units.length - 1) { v /= 1024; i++; }
-        return v.toFixed(2) + " " + units[i];
+        const units = ["B", "KB", "MB", "GB", "TB"];
+        let i = 0;
+        let value = bytes;
+        while (value >= 1024 && i < units.length - 1) {
+            value /= 1024;
+            i++;
+        }
+        return value.toFixed(2) + " " + units[i];
     }
 
+    /**
+     * 将 Unix 时间戳格式化为日期字符串
+     * @param {number} ts  Unix 秒时间戳
+     * @returns {string}
+     */
     function formatDate(ts) {
-        if (!ts || ts <= 0) return "永久有效";
-        var d = new Date(Number(ts) * 1000);
-        var yy = d.getFullYear();
-        var mm = String(d.getMonth() + 1).padStart(2, "0");
-        var dd = String(d.getDate()).padStart(2, "0");
-        return yy + "-" + mm + "-" + dd;
+        if (!ts || ts <= 0) return "未知";
+        const d = new Date(ts * 1000);
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, "0");
+        const dd = String(d.getDate()).padStart(2, "0");
+        return `${yyyy}-${mm}-${dd}`;
     }
 
-    function daysLeft(ts) {
-        if (!ts || ts <= 0) return "永久";
-        var now = Math.floor(Date.now() / 1000);
-        var diff = Number(ts) - now;
+    /**
+     * 计算距离到期还有多少天
+     * @param {number} expire Unix 秒时间戳
+     * @returns {string}
+     */
+    function daysLeft(expire) {
+        if (!expire || expire <= 0) return "永久";
+        const now = Math.floor(Date.now() / 1000);
+        const diff = expire - now;
         if (diff <= 0) return "已过期";
-        return Math.ceil(diff / 86400) + " 天";
+        const days = Math.ceil(diff / 86400);
+        return `${days} 天`;
     }
 
-    function bar(used, total, width) {
+    /**
+     * 生成进度条字符串（ASCII 风格，10 格）
+     * @param {number} used    已用字节
+     * @param {number} total   总字节
+     * @param {number} width   进度条宽度（字符数）
+     * @returns {string}
+     */
+    function progressBar(used, total, width) {
         width = width || 10;
         if (!total || total <= 0) return "░".repeat(width);
-        var ratio = Math.min(used / total, 1);
-        var filled = Math.round(ratio * width);
+        const ratio = Math.min(used / total, 1);
+        const filled = Math.round(ratio * width);
         return "▓".repeat(filled) + "░".repeat(width - filled);
     }
 
-    function trafficEmoji(used, total) {
-        if (!total || total <= 0) return "⚪";
-        var r = used / total;
-        if (r >= 0.9) return "🔴";
-        if (r >= 0.75) return "🟡";
-        return "🟢";
-    }
-
-    function expireEmoji(ts) {
-        if (!ts || ts <= 0) return "♾️";
-        var now = Math.floor(Date.now() / 1000);
-        var diff = Number(ts) - now;
-        if (diff <= 0) return "❌";
-        if (diff < 86400 * 7) return "⚠️";
-        return "✅";
-    }
-
-    function parseUserInfo(str) {
-        var result = {};
-        (str || "").split(";").forEach(function (pair) {
-            var parts = pair.trim().split("=");
-            if (parts.length === 2) result[parts[0].trim()] = Number(parts[1].trim());
-        });
-        return result;
+    // =========================================================
+    // 读取持久化存储中的订阅列表
+    // =========================================================
+    let subList = [];
+    try {
+        const stored = $persistentStore.read("egern_sub_list");
+        if (stored) {
+            subList = JSON.parse(stored);
+            if (!Array.isArray(subList)) subList = [];
+        }
+    } catch (e) {
+        console.log("[SubPanel] 读取数据失败:", e);
     }
 
     // =========================================================
-    // 2. 读取 Argument 配置并提取缓存
+    // 构建面板内容
     // =========================================================
-    var airports = [];
-
-    if (typeof $argument === "object" && $argument !== null) {
-        var argNames = ["AIRPORT1", "AIRPORT2", "AIRPORT3"];
-        argNames.forEach(function (key) {
-            var url = ($argument[key + "_URL"]) ? String($argument[key + "_URL"]).trim() : "";
-            var name = ($argument[key + "_NAME"]) ? String($argument[key + "_NAME"]).trim() : key;
-
-            // 当从 YAML 读取时，如果用户未填，URL可能会直接保留 "{{VAR}}" (或被赋值为空)
-            if (url && url.indexOf("{{") === -1 && url.indexOf("http") === 0) {
-                airports.push({ name: name, url: url });
-            }
-        });
-    }
-
-    // 防御性：如果没有合法的机场输入，返回友好提示而不是死机或报错
-    if (airports.length === 0) {
+    if (subList.length === 0) {
+        // 暂无数据时的提示
         $done({
-            title: "🛫 机场流量面板 v2.4",
-            content: "⚙️ 尚未配置订阅链接\n\n请前往 Egern「模块」\n点击“机场流量面板” -> 编辑模板参数\n至少填入第一个机场的完整订阅链接。",
-            icon: "airplane"
+            title: "🛫 机场流量面板",
+            content: "暂无订阅数据\n\n请先更新订阅以获取流量信息。\n\n提示：确保订阅链接已配置脚本拦截。",
+            icon: "airplane",
+            color: "#5856D6"
         });
         return;
     }
 
-    var cacheMap = {};
-    try {
-        var stored = $persistentStore.read("egern_sub_list");
-        if (stored) {
-            var arr = JSON.parse(stored);
-            if (Array.isArray(arr)) {
-                arr.forEach(function (item) { cacheMap[item.url || item.key] = item; });
-            }
+    // 遍历所有订阅，拼接面板文本
+    const lines = [];
+
+    subList.forEach(function (sub, idx) {
+        const name = sub.key || `订阅 ${idx + 1}`;
+        const used = sub.used || 0;
+        const remain = sub.remain || 0;
+        const total = sub.total || 0;
+        const expire = sub.expire || 0;
+        const bar = progressBar(used, total, 10);
+        const usedPct = total > 0 ? ((used / total) * 100).toFixed(1) : "0.0";
+
+        // 到期状态 emoji
+        const now = Math.floor(Date.now() / 1000);
+        let expireEmoji = "✅";
+        if (expire > 0) {
+            const diff = expire - now;
+            if (diff <= 0) expireEmoji = "❌";
+            else if (diff < 86400 * 7) expireEmoji = "⚠️";
         }
-    } catch (e) {
-        // ignore parsing errors from storage
-    }
 
-    // =========================================================
-    // 3. 渲染视图核心逻辑
-    // =========================================================
-    var isDone = false;
+        // 流量状态 emoji
+        let trafficEmoji = "🟢";
+        if (total > 0) {
+            const ratio = used / total;
+            if (ratio >= 0.9) trafficEmoji = "🔴";
+            else if (ratio >= 0.75) trafficEmoji = "🟡";
+        }
 
-    function render(results, isTimeout) {
-        if (isDone) return;
-        isDone = true;
+        // 每个订阅信息块
+        lines.push(`━━━ ${name} ━━━`);
+        lines.push(`${trafficEmoji} [${bar}] ${usedPct}%`);
+        lines.push(`  已用：${formatBytes(used)}`);
+        lines.push(`  剩余：${formatBytes(remain)}`);
+        lines.push(`  总量：${formatBytes(total)}`);
+        lines.push(`${expireEmoji} 到期：${formatDate(expire)}（余 ${daysLeft(expire)}）`);
 
-        var lines = [];
-        results.forEach(function (r, idx) {
-            var name = r.name;
-
-            // 网络错误尝试读取缓存降级
-            if (r.error) {
-                var fallback = cacheMap[r.url];
-                if (fallback) {
-                    r = fallback;
-                    r.name = name;
-                    r.isFallback = true;
-                } else {
-                    lines.push("━━━ " + name + " ━━━");
-                    if (r.error === "no_header") {
-                        lines.push("❗ 该机场未在响应头提供流量信息");
-                    } else {
-                        lines.push("❗ 获取失败或连接超时");
-                    }
-                    if (idx < results.length - 1) lines.push("");
-                    return;
-                }
-            }
-
-            var upload = r.upload || 0;
-            var download = r.download || 0;
-            var total = r.total || 0;
-            var expire = r.expire || 0;
-            var used = upload + download;
-            var remain = Math.max(total - used, 0);
-            var pct = total > 0 ? ((used / total) * 100).toFixed(1) : "0.0";
-
-            lines.push("━━━ " + name + " ━━━");
-            lines.push(trafficEmoji(used, total) + " [" + bar(used, total, 10) + "] " + pct + "%");
-            lines.push("  已用：" + formatBytes(used) + " / 剩余：" + formatBytes(remain));
-            lines.push(expireEmoji(expire) + " 到期：" + formatDate(expire) + "（余 " + daysLeft(expire) + "）");
-
-            if (r.isFallback) {
-                lines.push("  (展示缓存数据)");
-            }
-
-            if (idx < results.length - 1) lines.push("");
-        });
-
-        var now = new Date();
-        var hh = String(now.getHours()).padStart(2, "0");
-        var mi = String(now.getMinutes()).padStart(2, "0");
-        lines.push("");
-        lines.push("🕐 " + (isTimeout ? "缓存刷新于 " : "实时刷新于 ") + hh + ":" + mi);
-
-        $done({
-            title: "🛫 机场流量面板",
-            content: lines.join("\n"),
-            icon: "airplane"
-        });
-    }
-
-    // =========================================================
-    // 4. 发起并发网络请求 (并注入 2.5 秒死亡限制)
-    // =========================================================
-    var fetchResults = new Array(airports.length);
-    var pending = airports.length;
-
-    var timeoutTimer = setTimeout(function () {
-        if (isDone) return;
-        airports.forEach(function (ap, i) {
-            if (!fetchResults[i]) fetchResults[i] = { name: ap.name, url: ap.url, error: "timeout" };
-        });
-        render(fetchResults, true);
-    }, 2500);
-
-    airports.forEach(function (airport, idx) {
-        // 修复：改回使用 .get 防止部分环境不支持 .head 引发 TypeError；使用较短的 timeout 与主逻辑接轨
-        $httpClient.get(
-            {
-                url: airport.url,
-                headers: { "User-Agent": "Clash/1.9.0" },
-                timeout: 2
-            },
-            function (error, response) {
-                if (error) {
-                    fetchResults[idx] = { name: airport.name, url: airport.url, error: String(error) };
-                } else {
-                    var info = "";
-                    var headers = response.headers || {};
-                    Object.keys(headers).forEach(function (k) {
-                        if (k.toLowerCase() === "subscription-userinfo") info = headers[k];
-                    });
-
-                    if (!info) {
-                        fetchResults[idx] = { name: airport.name, url: airport.url, error: "no_header" };
-                    } else {
-                        var parsed = parseUserInfo(info);
-                        var item = {
-                            name: airport.name,
-                            url: airport.url,
-                            upload: parsed.upload || 0,
-                            download: parsed.download || 0,
-                            total: parsed.total || 0,
-                            expire: parsed.expire || 0
-                        };
-                        fetchResults[idx] = item;
-
-                        // 写入持久化缓存
-                        cacheMap[airport.url] = item;
-                        var newCacheArray = [];
-                        Object.keys(cacheMap).forEach(function (k) { newCacheArray.push(cacheMap[k]); });
-                        $persistentStore.write(JSON.stringify(newCacheArray), "egern_sub_list");
-                    }
-                }
-
-                pending--;
-                if (pending === 0 && !isDone) {
-                    clearTimeout(timeoutTimer);
-                    render(fetchResults, false);
-                }
-            }
-        );
+        if (idx < subList.length - 1) {
+            lines.push(""); // 订阅间空行
+        }
     });
 
+    // 更新时间
+    const now = new Date();
+    const timeStr = `${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`;
+    lines.push("");
+    lines.push(`🕐 更新于 ${timeStr}`);
+
+    // =========================================================
+    // 返回面板内容
+    // =========================================================
+    $done({
+        title: "🛫 机场流量面板",
+        content: lines.join("\n"),
+        icon: "airplane.departure",
+        color: "#5856D6"
+    });
 })();
