@@ -9,8 +9,9 @@ const subUrl = $argument.url;
 const panelName = $argument.panel_name || "airport_panel";
 const airportName = $argument.name || "我的机场";
 
-if (!subUrl || subUrl.trim() === "") {
-    console.log("未提供订阅链接");
+// 检查订阅链接是否为空或为未替换的占位符
+if (!subUrl || subUrl.trim() === "" || subUrl.indexOf("{") !== -1) {
+    console.log("未配置有效的订阅链接: " + subUrl);
     updatePanel(airportName, "未配置订阅链接，请在模块参数中设置。");
     $done();
     return;
@@ -19,24 +20,30 @@ if (!subUrl || subUrl.trim() === "") {
 const options = {
     url: subUrl,
     headers: {
-        'User-Agent': 'Egern/2.0'
+        'User-Agent': 'Clash' // 使用 Clash UA 以确保机场返回流量信息
     }
 };
 
 $httpClient.get(options, (error, response, data) => {
     if (error) {
         console.log("获取订阅失败: " + error);
-        updatePanel("❌ 连接失败", "无法获取订阅信息，请检查链接或网络。");
+        updatePanel(airportName, "❌ 连接失败\n无法获取订阅信息，请检查链接或网络。");
         $done();
         return;
     }
 
-    // 获取流量信息头 (subscription-userinfo)
-    const infoHeader = response.headers['subscription-userinfo'] || response.headers['Subscription-Userinfo'];
+    // 获取流量信息头 (不区分大小写)
+    let infoHeader = null;
+    for (let key in response.headers) {
+        if (key.toLowerCase() === 'subscription-userinfo') {
+            infoHeader = response.headers[key];
+            break;
+        }
+    }
     
     if (!infoHeader) {
         console.log("响应头中未找到 subscription-userinfo");
-        updatePanel("⚠️ 无法解析", "该订阅链接未提供流量统计信息。");
+        updatePanel(airportName, "⚠️ 无法解析流量信息\n该订阅链接未提供标准流量统计头。");
         $done();
         return;
     }

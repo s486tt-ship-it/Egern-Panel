@@ -12,19 +12,19 @@ compat_arguments:
 
 panels:
   - name: airport_panel_1
-    title: "{AIRPORT1_NAME}"
-    content: "未配置订阅"
+    title: "机场1"
+    content: "等待更新..."
     icon: "airplane.circle"
   - name: airport_panel_2
-    title: "{AIRPORT2_NAME}"
-    content: "未配置订阅"
+    title: "机场2"
+    content: "等待更新..."
     icon: "airplane.circle"
 
 scriptings:
   - schedule:
       name: update_airport_1
       cron: "0 * * * *"
-      script_url: "AirportSub.js"
+      script_url: "https://raw.githubusercontent.com/s486tt-ship-it/Egern-Panel/main/panel/Subscription%20Panel/AirportSub.js"
       arguments:
         url: "{AIRPORT1_URL}"
         panel_name: "airport_panel_1"
@@ -32,14 +32,14 @@ scriptings:
   - schedule:
       name: update_airport_2
       cron: "0 * * * *"
-      script_url: "AirportSub.js"
+      script_url: "https://raw.githubusercontent.com/s486tt-ship-it/Egern-Panel/main/panel/Subscription%20Panel/AirportSub.js"
       arguments:
         url: "{AIRPORT2_URL}"
         panel_name: "airport_panel_2"
         name: "{AIRPORT2_NAME}"
   - generic:
       name: manual_update_airport
-      script_url: "AirportSub.js"
+      script_url: "https://raw.githubusercontent.com/s486tt-ship-it/Egern-Panel/main/panel/Subscription%20Panel/AirportSub.js"
       arguments:
         url: "{AIRPORT1_URL}"
         panel_name: "airport_panel_1"
