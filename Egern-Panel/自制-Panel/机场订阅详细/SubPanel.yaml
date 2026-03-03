@@ -1,21 +1,48 @@
 # =============================================================
 # Egern 机场流量面板模块
-# 版本：2.3
+# 版本：2.4
 # 适配：Egern 2.16+
 # 作者：s486tt-ship-it
 # GitHub：https://github.com/s486tt-ship-it/Egern-Panel
 # =============================================================
 
-name: 机场流量面板 v2.3
-desc: 查看机场订阅流量使用情况（内置原生配置页，永不白屏）
+name: 机场流量面板 v2.4
+desc: 查看机场订阅流量使用、剩余流量及到期时间，支持最多 3 个机场
+
+compat_arguments:
+  AIRPORT1_NAME: ""
+  AIRPORT1_URL: ""
+  AIRPORT2_NAME: ""
+  AIRPORT2_URL: ""
+  AIRPORT3_NAME: ""
+  AIRPORT3_URL: ""
+
+compat_arguments_desc: |
+  === 基础配置 ===
+  AIRPORT1_NAME: 机场1的显示名称 (必填)
+  AIRPORT1_URL: 机场1的完整订阅链接 (必填)
+  
+  === 附加机场 (可选) ===
+  AIRPORT2_NAME: 机场2的显示名称 (若无则留空)
+  AIRPORT2_URL: 机场2的完整订阅链接 (若无则留空)
+  
+  AIRPORT3_NAME: 机场3的显示名称 (若无则留空)
+  AIRPORT3_URL: 机场3的完整订阅链接 (若无则留空)
 
 # ===========================================================
 # 面板配置
 # ===========================================================
 panels:
   - name: 机场流量面板
-    # v2.3 改用原生 js 参数模板模式
     script_url: https://raw.githubusercontent.com/s486tt-ship-it/Egern-Panel/main/Egern-Panel/%E8%87%AA%E5%88%B6-Panel/%E6%9C%BA%E5%9C%BA%E8%AE%A2%E9%98%85%E8%AF%A6%E7%BB%86/sub_panel.js
+    # 把用户在 UI 填的 compat_arguments 传进 JS 的 $argument 中
+    arguments:
+      AIRPORT1_NAME: "{{AIRPORT1_NAME}}"
+      AIRPORT1_URL: "{{AIRPORT1_URL}}"
+      AIRPORT2_NAME: "{{AIRPORT2_NAME}}"
+      AIRPORT2_URL: "{{AIRPORT2_URL}}"
+      AIRPORT3_NAME: "{{AIRPORT3_NAME}}"
+      AIRPORT3_URL: "{{AIRPORT3_URL}}"
 
 # ===========================================================
 # 脚本配置
