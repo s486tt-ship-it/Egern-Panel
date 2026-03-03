@@ -91,10 +91,12 @@
     var airports = [];
     var argNames = ["airport1", "airport2", "airport3"];
     argNames.forEach(function (key) {
-        var url = ($argument && $argument[key + "_url"]) || "";
-        var name = ($argument && $argument[key + "_name"]) || key;
-        if (url && url.trim().length > 0) {
-            airports.push({ name: name.trim(), url: url.trim() });
+        var url = ($argument && $argument[key + "_url"]) ? String($argument[key + "_url"]).trim() : "";
+        var name = ($argument && $argument[key + "_name"]) ? String($argument[key + "_name"]).trim() : key;
+
+        // 如果 url 是空的，或者是未被替换的模板变量（包含 {{ ），则忽略
+        if (url.length > 0 && url.indexOf("{{") === -1) {
+            airports.push({ name: name, url: url });
         }
     });
 
