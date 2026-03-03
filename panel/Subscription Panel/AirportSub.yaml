@@ -20,6 +20,7 @@ panels:
     arguments:
       url: "{AIRPORT1_URL}"
       name: "{AIRPORT1_NAME}"
+      panel_name: "airport_panel_1"
   - name: airport_panel_2
     title: "正在获取..."
     content: "正在获取数据..."
@@ -29,6 +30,7 @@ panels:
     arguments:
       url: "{AIRPORT2_URL}"
       name: "{AIRPORT2_NAME}"
+      panel_name: "airport_panel_2"
 
 scriptings:
   - generic:
@@ -37,3 +39,4 @@ scriptings:
       arguments:
         url: "{AIRPORT1_URL}"
         name: "{AIRPORT1_NAME}"
+        panel_name: "airport_panel_1"

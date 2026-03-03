@@ -4,22 +4,20 @@
  * 通过解析订阅链接的 subscription-userinfo 响应头来显示流量和到期时间。
  * 支持通过脚本参数传递订阅地址和面板名称。
  * 
- * v1.0.4 - 优化面板更新逻辑，使用 $done({title, content}) 方式。
+ * v1.0.5 - 恢复 $panel.update 方式并添加详细调试日志。
  */
 
 const subUrl = $argument.url || "";
 const airportName = $argument.name || "我的机场";
+const panelName = $argument.panel_name || "airport_panel_1";
 
-console.log(`[机场面板] 开始获取数据: ${airportName}, URL: ${subUrl}`);
+console.log(`[机场面板] 脚本启动: ${airportName}, URL: ${subUrl}, Panel: ${panelName}`);
 
 // 检查订阅链接是否为空
 if (!subUrl || subUrl.trim() === "" || subUrl.includes("{AIRPORT")) {
     console.log("[机场面板] 订阅链接未配置或无效");
-    $done({
-        title: airportName,
-        content: "⚠️ 未配置订阅链接\n请在 Egern 模块参数中填写正确的 URL。",
-        icon: "airplane.circle"
-    });
+    updatePanel(airportName, "⚠️ 未配置订阅链接\n请在 Egern 模块参数中填写正确的 URL。");
+    $done();
 } else {
     const options = {
         url: subUrl,
@@ -29,17 +27,17 @@ if (!subUrl || subUrl.trim() === "" || subUrl.includes("{AIRPORT")) {
         timeout: 10000
     };
 
+    console.log(`[机场面板] 发起 HTTP 请求: ${subUrl}`);
     $httpClient.get(options, (error, response, data) => {
         if (error) {
-            console.log(`[机场面板] 获取订阅失败: ${error}`);
-            $done({
-                title: airportName,
-                content: `❌ 连接失败\n无法获取订阅信息，请检查网络。\n${error}`,
-                icon: "airplane.circle"
-            });
+            console.log(`[机场面板] 请求失败: ${error}`);
+            updatePanel(airportName, `❌ 连接失败\n无法获取订阅信息，请检查网络。\n${error}`);
+            $done();
             return;
         }
 
+        console.log(`[机场面板] 收到响应, 状态码: ${response.status}`);
+        
         // 获取流量信息头 (不区分大小写)
         let infoHeader = null;
         for (let key in response.headers) {
@@ -51,23 +49,30 @@ if (!subUrl || subUrl.trim() === "" || subUrl.includes("{AIRPORT")) {
         
         if (!infoHeader) {
             console.log("[机场面板] 响应头中未找到 subscription-userinfo");
-            $done({
-                title: airportName,
-                content: "⚠️ 无法解析流量信息\n该订阅链接未提供标准流量统计头。",
-                icon: "airplane.circle"
-            });
+            updatePanel(airportName, "⚠️ 无法解析流量信息\n该订阅链接未提供标准流量统计头。");
+            $done();
             return;
         }
 
-        console.log(`[机场面板] 成功获取流量信息: ${infoHeader}`);
+        console.log(`[机场面板] 成功解析头信息: ${infoHeader}`);
         const info = parseUserInfo(infoHeader);
         const content = formatPanelContent(info);
         
-        $done({
-            title: airportName,
-            content: content,
-            icon: "airplane.circle"
-        });
+        updatePanel(airportName, content);
+        $done();
+    });
+}
+
+/**
+ * 更新面板
+ */
+function updatePanel(title, content) {
+    console.log(`[机场面板] 更新 UI: ${title}`);
+    $panel.update({
+        name: panelName,
+        title: title,
+        content: content,
+        icon: "airplane.circle"
     });
 }
 
