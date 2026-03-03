@@ -1,0 +1,26 @@
+# airport_panel.yaml
+
+# This configuration file defines the airport panel settings
+
+# Updated: 2026-03-03 03:25:51 UTC
+
+# Section for managing subscription links
+subscriptions:
+  - link: "https://example.com/subscription1"
+    description: "Subscription for Service 1"
+  - link: "https://example.com/subscription2"
+    description: "Subscription for Service 2"
+
+# Improved UI parameters management
+ui:
+  theme: "light"
+  layout: "grid"
+  showIcons: true
+  iconSize: "medium"
+
+# Additional parameters for better management
+parameters:
+  timeout: 3000
+  retries: 5
+  enableFeatureX: true
+
