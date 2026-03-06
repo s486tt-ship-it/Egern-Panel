@@ -1,0 +1,1491 @@
+mode: rule
+mixed-port: 7897
+allow-lan: false
+log-level: info
+ipv6: false
+external-controller: ''
+secret: set-your-secret
+unified-delay: true
+sniffer:
+  enable: true
+  force-dns-mapping: true
+  parse-pure-ip: true
+bind-address: '*'
+find-process-mode: strict
+global-client-fingerprint: chrome
+tun:
+  enable: false
+  stack: gvisor
+  auto-route: true
+  auto-detect-interface: true
+  strict-route: false
+  dns-hijack:
+  - any:53
+  device: CMCC
+  mtu: 1500
+  endpoint-independent-nat: true
+  route-exclude-address: []
+tcp-concurrent: true
+external-controller-cors:
+  allow-private-network: true
+  allow-origins:
+  - tauri://localhost
+  - http://tauri.localhost
+  - https://yacd.metacubex.one
+  - https://metacubex.github.io
+  - https://board.zash.run.place
+ntp:
+  enable: true
+  write-to-system: false
+  server: ntp.aliyun.com
+  port: 123
+  interval: 30
+dns:
+  enable: true
+  listen: :53
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  fake-ip-filter-mode: blacklist
+  prefer-h3: true
+  respect-rules: true
+  use-hosts: false
+  use-system-hosts: false
+  ipv6: false
+  fake-ip-filter:
+  - '*.lan'
+  - '*.local'
+  - '*.arpa'
+  - time.*.com
+  - ntp.*.com
+  - +.market.xiaomi.com
+  - localhost.ptlogin2.qq.com
+  - '*.msftncsi.com'
+  - www.msftconnecttest.com
+  default-nameserver:
+  - 223.5.5.5
+  - 119.29.29.29
+  nameserver:
+  - https://cloudflare-dns.com/dns-query
+  - https://dns.google/dns-query
+  direct-nameserver:
+  - https://doh.pub/dns-query
+  - https://dns.alidns.com/dns-query
+  - 223.5.5.5
+  - 119.29.29.29
+  direct-nameserver-follow-policy: true
+  fallback:
+  - https://1.1.1.1/dns-query
+  - https://8.8.8.8/dns-query
+  - https://dns.google/dns-query
+  fallback-filter:
+    geoip: true
+    geoip-code: CN
+    ipcidr:
+    - 240.0.0.0/4
+    - 0.0.0.0/32
+    domain:
+    - +.google.com
+    - +.facebook.com
+    - +.youtube.com
+    - +.twitter.com
+    - +.github.com
+  proxy-server-nameserver:
+  - https://cloudflare-dns.com/dns-query
+  nameserver-policy:
+    geosite:cn:
+    - https://223.5.5.5/dns-query
+profile:
+  store-selected: true
+  store-fake-ip: true
+external-controller-pipe: \\.\pipe\verge-mihomo
+proxies:
+- name: HK-1
+  type: vless
+  server: hk1-r.link-t7.com
+  port: 10126
+  uuid: 3A8435B6-BAE6-4F18-8FA1-EC6920D86784
+  udp: true
+  packet-encoding: xudp
+  cipher: auto
+  client-fingerprint: chrome
+  tls: true
+  skip-cert-verify: false
+  servername: s0.awsstatic.com
+  reality-opts:
+    public-key: wOu-BMrXvk9KX23JZrlpUlF4SMjDcejm0vNECdhy5xE
+    short-id: 686c0ef0
+  network: grpc
+  grpc-opts:
+    grpc-service-name: update
+- name: HK-2
+  type: vless
+  server: hk2-r.link-t7.com
+  port: 10127
+  uuid: 3A8435B6-BAE6-4F18-8FA1-EC6920D86784
+  udp: true
+  packet-encoding: xudp
+  cipher: auto
+  client-fingerprint: chrome
+  tls: true
+  skip-cert-verify: false
+  servername: s0.awsstatic.com
+  reality-opts:
+    public-key: wOu-BMrXvk9KX23JZrlpUlF4SMjDcejm0vNECdhy5xE
+    short-id: 686c0ef0
+  network: grpc
+  grpc-opts:
+    grpc-service-name: update
+- name: HK-3
+  type: vless
+  server: hk3-r.link-t7.com
+  port: 10128
+  uuid: 3A8435B6-BAE6-4F18-8FA1-EC6920D86784
+  udp: true
+  packet-encoding: xudp
+  cipher: auto
+  client-fingerprint: chrome
+  tls: true
+  skip-cert-verify: false
+  servername: s0.awsstatic.com
+  reality-opts:
+    public-key: wOu-BMrXvk9KX23JZrlpUlF4SMjDcejm0vNECdhy5xE
+    short-id: 686c0ef0
+  network: grpc
+  grpc-opts:
+    grpc-service-name: movie
+- name: HK-4
+  type: vless
+  server: hk4-r.link-t7.com
+  port: 10129
+  uuid: 3A8435B6-BAE6-4F18-8FA1-EC6920D86784
+  udp: true
+  packet-encoding: xudp
+  cipher: auto
+  client-fingerprint: chrome
+  tls: true
+  skip-cert-verify: false
+  servername: s0.awsstatic.com
+  reality-opts:
+    public-key: wOu-BMrXvk9KX23JZrlpUlF4SMjDcejm0vNECdhy5xE
+    short-id: 686c0ef0
+  network: grpc
+  grpc-opts:
+    grpc-service-name: movie
+- name: HK2-HY2
+  type: hysteria2
+  server: hk2.dexlos.com
+  ports: 20200-20399
+  password: 3A8435B6-BAE6-4F18-8FA1-EC6920D86784
+  udp: true
+  skip-cert-verify: false
+  sni: hk2.dexlos.com
+- name: HK3-HY2
+  type: hysteria2
+  server: hk3.dexlos.com
+  ports: 20400-20599
+  password: 3A8435B6-BAE6-4F18-8FA1-EC6920D86784
+  udp: true
+  skip-cert-verify: false
+  sni: hk3.dexlos.com
+- name: HK4-HY2
+  type: hysteria2
+  server: hk4.dexlos.com
+  ports: 20600-20799
+  password: 3A8435B6-BAE6-4F18-8FA1-EC6920D86784
+  udp: true
+  skip-cert-verify: false
+  sni: hk4.dexlos.com
+- name: HK5-HY2
+  type: hysteria2
+  server: hk5.dexlos.com
+  ports: 20800-20999
+  password: 3A8435B6-BAE6-4F18-8FA1-EC6920D86784
+  udp: true
+  skip-cert-verify: false
+  sni: hk5.dexlos.com
+- name: JP-1
+  type: vless
+  server: jp1-r.link-t7.com
+  port: 10031
+  uuid: 3A8435B6-BAE6-4F18-8FA1-EC6920D86784
+  udp: true
+  packet-encoding: xudp
+  cipher: auto
+  client-fingerprint: chrome
+  tls: true
+  skip-cert-verify: false
+  servername: s0.awsstatic.com
+  reality-opts:
+    public-key: wOu-BMrXvk9KX23JZrlpUlF4SMjDcejm0vNECdhy5xE
+    short-id: 686c0ef0
+  network: grpc
+  grpc-opts:
+    grpc-service-name: update
+- name: JP-2
+  type: vless
+  server: jp2-r.link-t7.com
+  port: 10032
+  uuid: 3A8435B6-BAE6-4F18-8FA1-EC6920D86784
+  udp: true
+  packet-encoding: xudp
+  cipher: auto
+  client-fingerprint: chrome
+  tls: true
+  skip-cert-verify: false
+  servername: s0.awsstatic.com
+  reality-opts:
+    public-key: wOu-BMrXvk9KX23JZrlpUlF4SMjDcejm0vNECdhy5xE
+    short-id: 686c0ef0
+  network: grpc
+  grpc-opts:
+    grpc-service-name: update
+- name: JP-3
+  type: vless
+  server: jp3-r.link-t7.com
+  port: 10033
+  uuid: 3A8435B6-BAE6-4F18-8FA1-EC6920D86784
+  udp: true
+  packet-encoding: xudp
+  cipher: auto
+  client-fingerprint: chrome
+  tls: true
+  skip-cert-verify: false
+  servername: s0.awsstatic.com
+  reality-opts:
+    public-key: wOu-BMrXvk9KX23JZrlpUlF4SMjDcejm0vNECdhy5xE
+    short-id: 686c0ef0
+  network: grpc
+  grpc-opts:
+    grpc-service-name: update
+- name: JP-4
+  type: vless
+  server: jp4-r.link-t7.com
+  port: 10034
+  uuid: 3A8435B6-BAE6-4F18-8FA1-EC6920D86784
+  udp: true
+  packet-encoding: xudp
+  cipher: auto
+  client-fingerprint: chrome
+  tls: true
+  skip-cert-verify: false
+  servername: s0.awsstatic.com
+  reality-opts:
+    public-key: wOu-BMrXvk9KX23JZrlpUlF4SMjDcejm0vNECdhy5xE
+    short-id: 686c0ef0
+  network: grpc
+  grpc-opts:
+    grpc-service-name: update
+- name: JP1-HY2
+  type: hysteria2
+  server: jp1.dexlos.com
+  ports: 20000-20199
+  password: 3A8435B6-BAE6-4F18-8FA1-EC6920D86784
+  udp: true
+  skip-cert-verify: false
+  sni: jp1.dexlos.com
+  obfs: salamander
+  obfs-password: xK9mN2pLq5vR8wB3
+- name: JP2-HY2
+  type: hysteria2
+  server: jp2.dexlos.com
+  ports: 20200-20399
+  password: 3A8435B6-BAE6-4F18-8FA1-EC6920D86784
+  udp: true
+  skip-cert-verify: false
+  sni: jp2.dexlos.com
+  obfs: salamander
+  obfs-password: xK9mN2pLq5vR8wB3
+- name: JP3-HY2
+  type: hysteria2
+  server: jp3.dexlos.com
+  ports: 20400-20599
+  password: 3A8435B6-BAE6-4F18-8FA1-EC6920D86784
+  udp: true
+  skip-cert-verify: false
+  sni: jp3.dexlos.com
+  obfs: salamander
+  obfs-password: xK9mN2pLq5vR8wB3
+- name: JP4-HY2
+  type: hysteria2
+  server: jp4.dexlos.com
+  ports: 20600-20799
+  password: 3A8435B6-BAE6-4F18-8FA1-EC6920D86784
+  udp: true
+  skip-cert-verify: false
+  sni: jp4.dexlos.com
+  obfs: salamander
+  obfs-password: xK9mN2pLq5vR8wB3
+- name: JP5-HY2
+  type: hysteria2
+  server: jp5.dexlos.com
+  ports: 20800-20999
+  password: 3A8435B6-BAE6-4F18-8FA1-EC6920D86784
+  udp: true
+  skip-cert-verify: false
+  sni: jp5.dexlos.com
+  obfs: salamander
+  obfs-password: xK9mN2pLq5vR8wB3
+- name: KR-1
+  type: vless
+  server: kr1-r.link-t7.com
+  port: 10046
+  uuid: 3A8435B6-BAE6-4F18-8FA1-EC6920D86784
+  udp: true
+  packet-encoding: xudp
+  cipher: auto
+  client-fingerprint: chrome
+  tls: true
+  skip-cert-verify: false
+  servername: s0.awsstatic.com
+  reality-opts:
+    public-key: wOu-BMrXvk9KX23JZrlpUlF4SMjDcejm0vNECdhy5xE
+    short-id: 686c0ef0
+  network: grpc
+  grpc-opts:
+    grpc-service-name: update
+- name: KR-2
+  type: vless
+  server: kr2-r.link-t7.com
+  port: 10047
+  uuid: 3A8435B6-BAE6-4F18-8FA1-EC6920D86784
+  udp: true
+  packet-encoding: xudp
+  cipher: auto
+  client-fingerprint: chrome
+  tls: true
+  skip-cert-verify: false
+  servername: s0.awsstatic.com
+  reality-opts:
+    public-key: wOu-BMrXvk9KX23JZrlpUlF4SMjDcejm0vNECdhy5xE
+    short-id: 686c0ef0
+  network: grpc
+  grpc-opts:
+    grpc-service-name: update
+- name: SG-1
+  type: vless
+  server: sg1-r.link-t7.com
+  port: 10036
+  uuid: 3A8435B6-BAE6-4F18-8FA1-EC6920D86784
+  udp: true
+  packet-encoding: xudp
+  cipher: auto
+  client-fingerprint: chrome
+  tls: true
+  skip-cert-verify: false
+  servername: s0.awsstatic.com
+  reality-opts:
+    public-key: wOu-BMrXvk9KX23JZrlpUlF4SMjDcejm0vNECdhy5xE
+    short-id: 686c0ef0
+  network: grpc
+  grpc-opts:
+    grpc-service-name: update
+- name: SG-2
+  type: vless
+  server: sg2-r.link-t7.com
+  port: 10037
+  uuid: 3A8435B6-BAE6-4F18-8FA1-EC6920D86784
+  udp: true
+  packet-encoding: xudp
+  cipher: auto
+  client-fingerprint: chrome
+  tls: true
+  skip-cert-verify: false
+  servername: s0.awsstatic.com
+  reality-opts:
+    public-key: wOu-BMrXvk9KX23JZrlpUlF4SMjDcejm0vNECdhy5xE
+    short-id: 686c0ef0
+  network: grpc
+  grpc-opts:
+    grpc-service-name: update
+- name: SG-3
+  type: vless
+  server: sg3-r.link-t7.com
+  port: 10038
+  uuid: 3A8435B6-BAE6-4F18-8FA1-EC6920D86784
+  udp: true
+  packet-encoding: xudp
+  cipher: auto
+  client-fingerprint: chrome
+  tls: true
+  skip-cert-verify: false
+  servername: d1.awsstatic.com
+  reality-opts:
+    public-key: wOu-BMrXvk9KX23JZrlpUlF4SMjDcejm0vNECdhy5xE
+    short-id: 686c0ef0
+  network: grpc
+  grpc-opts:
+    grpc-service-name: update
+- name: SG4-HY2
+  type: hysteria2
+  server: sg4.dexlos.com
+  ports: 20600-20799
+  password: 3A8435B6-BAE6-4F18-8FA1-EC6920D86784
+  udp: true
+  skip-cert-verify: false
+  sni: sg4.dexlos.com
+  obfs: salamander
+  obfs-password: xK9mN2pLq5vR8wB3
+- name: SG5-HY2
+  type: hysteria2
+  server: sg5.dexlos.com
+  ports: 20800-20999
+  password: 3A8435B6-BAE6-4F18-8FA1-EC6920D86784
+  udp: true
+  skip-cert-verify: false
+  sni: sg5.dexlos.com
+  obfs: salamander
+  obfs-password: xK9mN2pLq5vR8wB3
+- name: ss-US-1
+  type: ss
+  server: 155.117.87.123
+  port: 10378
+  cipher: 2022-blake3-aes-128-gcm
+  password: MjAyNjJrNXN6WWtHQVZPeA==:M0E4NDM1QjYtQkFFNi00Rg==
+  udp: true
+- name: TW-1
+  type: tuic
+  server: tw1.dexlos.com
+  port: 8080
+  version: 5
+  uuid: 3A8435B6-BAE6-4F18-8FA1-EC6920D86784
+  password: 3A8435B6-BAE6-4F18-8FA1-EC6920D86784
+  skip-cert-verify: false
+  sni: tw1.dexlos.com
+  alpn:
+  - h3
+- name: TW-2
+  type: tuic
+  server: tw2.dexlos.com
+  port: 8080
+  version: 5
+  uuid: 3A8435B6-BAE6-4F18-8FA1-EC6920D86784
+  password: 3A8435B6-BAE6-4F18-8FA1-EC6920D86784
+  skip-cert-verify: false
+  sni: tw2.dexlos.com
+  alpn:
+  - h3
+- name: TW-3
+  type: tuic
+  server: tw3.dexlos.com
+  port: 8080
+  version: 5
+  uuid: 3A8435B6-BAE6-4F18-8FA1-EC6920D86784
+  password: 3A8435B6-BAE6-4F18-8FA1-EC6920D86784
+  skip-cert-verify: false
+  sni: tw3.dexlos.com
+  alpn:
+  - h3
+- name: TW-4
+  type: tuic
+  server: tw4.dexlos.com
+  port: 8080
+  version: 5
+  uuid: 3A8435B6-BAE6-4F18-8FA1-EC6920D86784
+  password: 3A8435B6-BAE6-4F18-8FA1-EC6920D86784
+  skip-cert-verify: false
+  sni: tw4.dexlos.com
+  alpn:
+  - h3
+- name: TW-5
+  type: tuic
+  server: tw5.dexlos.com
+  port: 8080
+  version: 5
+  uuid: 3A8435B6-BAE6-4F18-8FA1-EC6920D86784
+  password: 3A8435B6-BAE6-4F18-8FA1-EC6920D86784
+  skip-cert-verify: false
+  sni: tw5.dexlos.com
+  alpn:
+  - h3
+- name: US-1
+  type: vless
+  server: 155.117.87.197
+  port: 10041
+  uuid: 3A8435B6-BAE6-4F18-8FA1-EC6920D86784
+  udp: true
+  packet-encoding: xudp
+  cipher: auto
+  client-fingerprint: chrome
+  tls: true
+  skip-cert-verify: false
+  servername: www.microsoft.com
+  reality-opts:
+    public-key: 4ubRpOGo1d0kaRjvob_x0t271IL1P6al2gM5slqf_Fc
+    short-id: 686c0ef0
+  network: grpc
+  grpc-opts:
+    grpc-service-name: update
+- name: US-2
+  type: vless
+  server: 154.3.59.94
+  port: 10042
+  uuid: 3A8435B6-BAE6-4F18-8FA1-EC6920D86784
+  udp: true
+  packet-encoding: xudp
+  cipher: auto
+  client-fingerprint: chrome
+  tls: true
+  skip-cert-verify: false
+  servername: www.microsoft.com
+  reality-opts:
+    public-key: 4ubRpOGo1d0kaRjvob_x0t271IL1P6al2gM5slqf_Fc
+    short-id: 686c0ef0
+  network: grpc
+  grpc-opts:
+    grpc-service-name: update
+- name: US-3-gemini
+  type: vless
+  server: us3-r.link-t7.com
+  port: 10043
+  uuid: 3A8435B6-BAE6-4F18-8FA1-EC6920D86784
+  udp: true
+  packet-encoding: xudp
+  cipher: auto
+  client-fingerprint: chrome
+  tls: true
+  skip-cert-verify: false
+  servername: www.microsoft.com
+  reality-opts:
+    public-key: 4ubRpOGo1d0kaRjvob_x0t271IL1P6al2gM5slqf_Fc
+    short-id: 686c0ef0
+  network: grpc
+  grpc-opts:
+    grpc-service-name: update
+- name: US-gemini-1
+  type: hysteria2
+  server: us9.dexlos.com
+  ports: 21600-21799
+  password: 3A8435B6-BAE6-4F18-8FA1-EC6920D86784
+  udp: true
+  skip-cert-verify: false
+  sni: us9.dexlos.com
+  obfs: salamander
+  obfs-password: xK9mN2pLq5vR8wB3
+- name: US1-HY2
+  type: hysteria2
+  server: us1.dexlos.com
+  ports: 20000-20199
+  password: 3A8435B6-BAE6-4F18-8FA1-EC6920D86784
+  udp: true
+  skip-cert-verify: false
+  sni: us1.dexlos.com
+  obfs: salamander
+  obfs-password: xK9mN2pLq5vR8wB3
+- name: US2-HY2
+  type: hysteria2
+  server: us2.dexlos.com
+  ports: 20200-20399
+  password: 3A8435B6-BAE6-4F18-8FA1-EC6920D86784
+  udp: true
+  skip-cert-verify: false
+  sni: us2.dexlos.com
+  obfs: salamander
+  obfs-password: xK9mN2pLq5vR8wB3
+- name: US3-HY2
+  type: hysteria2
+  server: us3.dexlos.com
+  ports: 20400-20599
+  password: 3A8435B6-BAE6-4F18-8FA1-EC6920D86784
+  udp: true
+  skip-cert-verify: false
+  sni: us3.dexlos.com
+  obfs: salamander
+  obfs-password: xK9mN2pLq5vR8wB3
+- name: US4-HY2
+  type: hysteria2
+  server: us4.dexlos.com
+  ports: 20600-20799
+  password: 3A8435B6-BAE6-4F18-8FA1-EC6920D86784
+  udp: true
+  skip-cert-verify: false
+  sni: us4.dexlos.com
+  obfs: salamander
+  obfs-password: xK9mN2pLq5vR8wB3
+- name: US5-HY2
+  type: hysteria2
+  server: us5.dexlos.com
+  ports: 20800-20999
+  password: 3A8435B6-BAE6-4F18-8FA1-EC6920D86784
+  udp: true
+  skip-cert-verify: false
+  sni: us5.dexlos.com
+  obfs: salamander
+  obfs-password: xK9mN2pLq5vR8wB3
+- name: US6-HY2
+  type: hysteria2
+  server: us6.dexlos.com
+  ports: 21000-21199
+  password: 3A8435B6-BAE6-4F18-8FA1-EC6920D86784
+  udp: true
+  skip-cert-verify: false
+  sni: us6.dexlos.com
+  obfs: salamander
+  obfs-password: xK9mN2pLq5vR8wB3
+- name: US7-HY2
+  type: hysteria2
+  server: us7.dexlos.com
+  ports: 21200-21399
+  password: 3A8435B6-BAE6-4F18-8FA1-EC6920D86784
+  udp: true
+  skip-cert-verify: false
+  sni: us7.dexlos.com
+  obfs: salamander
+  obfs-password: xK9mN2pLq5vR8wB3
+- name: US8-HY2
+  type: hysteria2
+  server: us8.dexlos.com
+  ports: 21400-21599
+  password: 3A8435B6-BAE6-4F18-8FA1-EC6920D86784
+  udp: true
+  skip-cert-verify: false
+  sni: us8.dexlos.com
+  obfs: salamander
+  obfs-password: xK9mN2pLq5vR8wB3
+proxy-groups:
+- name: 主代理
+  type: select
+  proxies:
+  - 自动选择
+  - 负载均衡
+  - HK自动选择
+  - JP自动选择
+  - KR自动选择
+  - SG自动选择
+  - TW自动选择
+  - US自动选择
+  - HK负载均衡
+  - JP负载均衡
+  - KR负载均衡
+  - SG负载均衡
+  - TW负载均衡
+  - US负载均衡
+  - DIRECT
+  - HK-1
+  - HK-2
+  - HK-3
+  - HK-4
+  - HK2-HY2
+  - HK3-HY2
+  - HK4-HY2
+  - HK5-HY2
+  - JP-1
+  - JP-2
+  - JP-3
+  - JP-4
+  - JP1-HY2
+  - JP2-HY2
+  - JP3-HY2
+  - JP4-HY2
+  - JP5-HY2
+  - KR-1
+  - KR-2
+  - SG-1
+  - SG-2
+  - SG-3
+  - SG4-HY2
+  - SG5-HY2
+  - ss-US-1
+  - TW-1
+  - TW-2
+  - TW-3
+  - TW-4
+  - TW-5
+  - US-1
+  - US-2
+  - US-3-gemini
+  - US-gemini-1
+  - US1-HY2
+  - US2-HY2
+  - US3-HY2
+  - US4-HY2
+  - US5-HY2
+  - US6-HY2
+  - US7-HY2
+  - US8-HY2
+- name: 自动选择
+  type: url-test
+  proxies:
+  - HK-1
+  - HK-2
+  - HK-3
+  - HK-4
+  - HK2-HY2
+  - HK3-HY2
+  - HK4-HY2
+  - HK5-HY2
+  - JP-1
+  - JP-2
+  - JP-3
+  - JP-4
+  - JP1-HY2
+  - JP2-HY2
+  - JP3-HY2
+  - JP4-HY2
+  - JP5-HY2
+  - KR-1
+  - KR-2
+  - SG-1
+  - SG-2
+  - SG-3
+  - SG4-HY2
+  - SG5-HY2
+  - ss-US-1
+  - TW-1
+  - TW-2
+  - TW-3
+  - TW-4
+  - TW-5
+  - US-1
+  - US-2
+  - US-3-gemini
+  - US-gemini-1
+  - US1-HY2
+  - US2-HY2
+  - US3-HY2
+  - US4-HY2
+  - US5-HY2
+  - US6-HY2
+  - US7-HY2
+  - US8-HY2
+  url: http://www.gstatic.com/generate_204
+  interval: 180
+  tolerance: 25
+- name: 负载均衡
+  type: load-balance
+  proxies:
+  - HK-1
+  - HK-2
+  - HK-3
+  - HK-4
+  - HK2-HY2
+  - HK3-HY2
+  - HK4-HY2
+  - HK5-HY2
+  - JP-1
+  - JP-2
+  - JP-3
+  - JP-4
+  - JP1-HY2
+  - JP2-HY2
+  - JP3-HY2
+  - JP4-HY2
+  - JP5-HY2
+  - KR-1
+  - KR-2
+  - SG-1
+  - SG-2
+  - SG-3
+  - SG4-HY2
+  - SG5-HY2
+  - ss-US-1
+  - TW-1
+  - TW-2
+  - TW-3
+  - TW-4
+  - TW-5
+  - US-1
+  - US-2
+  - US-3-gemini
+  - US-gemini-1
+  - US1-HY2
+  - US2-HY2
+  - US3-HY2
+  - US4-HY2
+  - US5-HY2
+  - US6-HY2
+  - US7-HY2
+  - US8-HY2
+  url: http://www.gstatic.com/generate_204
+  interval: 300
+  tolerance: 50
+  strategy: consistent-hashing
+- name: HK自动选择
+  type: url-test
+  proxies:
+  - HK-1
+  - HK-2
+  - HK-3
+  - HK-4
+  - HK2-HY2
+  - HK3-HY2
+  - HK4-HY2
+  - HK5-HY2
+  url: http://www.gstatic.com/generate_204
+  interval: 180
+  tolerance: 25
+- name: JP自动选择
+  type: url-test
+  proxies:
+  - JP-1
+  - JP-2
+  - JP-3
+  - JP-4
+  - JP1-HY2
+  - JP2-HY2
+  - JP3-HY2
+  - JP4-HY2
+  - JP5-HY2
+  url: http://www.gstatic.com/generate_204
+  interval: 180
+  tolerance: 25
+- name: KR自动选择
+  type: url-test
+  proxies:
+  - KR-1
+  - KR-2
+  url: http://www.gstatic.com/generate_204
+  interval: 180
+  tolerance: 25
+- name: SG自动选择
+  type: url-test
+  proxies:
+  - SG-1
+  - SG-2
+  - SG-3
+  - SG4-HY2
+  - SG5-HY2
+  url: http://www.gstatic.com/generate_204
+  interval: 180
+  tolerance: 25
+- name: TW自动选择
+  type: url-test
+  proxies:
+  - TW-1
+  - TW-2
+  - TW-3
+  - TW-4
+  - TW-5
+  url: http://www.gstatic.com/generate_204
+  interval: 180
+  tolerance: 25
+- name: US自动选择
+  type: url-test
+  proxies:
+  - ss-US-1
+  - US-1
+  - US-2
+  - US-3-gemini
+  - US-gemini-1
+  - US1-HY2
+  - US2-HY2
+  - US3-HY2
+  - US4-HY2
+  - US5-HY2
+  - US6-HY2
+  - US7-HY2
+  - US8-HY2
+  url: http://www.gstatic.com/generate_204
+  interval: 180
+  tolerance: 25
+- name: HK负载均衡
+  type: load-balance
+  proxies:
+  - HK-1
+  - HK-2
+  - HK-3
+  - HK-4
+  - HK2-HY2
+  - HK3-HY2
+  - HK4-HY2
+  - HK5-HY2
+  url: http://www.gstatic.com/generate_204
+  interval: 300
+  tolerance: 50
+  strategy: consistent-hashing
+- name: JP负载均衡
+  type: load-balance
+  proxies:
+  - JP-1
+  - JP-2
+  - JP-3
+  - JP-4
+  - JP1-HY2
+  - JP2-HY2
+  - JP3-HY2
+  - JP4-HY2
+  - JP5-HY2
+  url: http://www.gstatic.com/generate_204
+  interval: 300
+  tolerance: 50
+  strategy: consistent-hashing
+- name: KR负载均衡
+  type: load-balance
+  proxies:
+  - KR-1
+  - KR-2
+  url: http://www.gstatic.com/generate_204
+  interval: 300
+  tolerance: 50
+  strategy: consistent-hashing
+- name: SG负载均衡
+  type: load-balance
+  proxies:
+  - SG-1
+  - SG-2
+  - SG-3
+  - SG4-HY2
+  - SG5-HY2
+  url: http://www.gstatic.com/generate_204
+  interval: 300
+  tolerance: 50
+  strategy: consistent-hashing
+- name: TW负载均衡
+  type: load-balance
+  proxies:
+  - TW-1
+  - TW-2
+  - TW-3
+  - TW-4
+  - TW-5
+  url: http://www.gstatic.com/generate_204
+  interval: 300
+  tolerance: 50
+  strategy: consistent-hashing
+- name: US负载均衡
+  type: load-balance
+  proxies:
+  - ss-US-1
+  - US-1
+  - US-2
+  - US-3-gemini
+  - US-gemini-1
+  - US1-HY2
+  - US2-HY2
+  - US3-HY2
+  - US4-HY2
+  - US5-HY2
+  - US6-HY2
+  - US7-HY2
+  - US8-HY2
+  url: http://www.gstatic.com/generate_204
+  interval: 300
+  tolerance: 50
+  strategy: consistent-hashing
+- name: Bahamut
+  type: select
+  proxies:
+  - 主代理
+  - 自动选择
+  - 负载均衡
+  - HK自动选择
+  - JP自动选择
+  - KR自动选择
+  - SG自动选择
+  - TW自动选择
+  - US自动选择
+  - HK负载均衡
+  - JP负载均衡
+  - KR负载均衡
+  - SG负载均衡
+  - TW负载均衡
+  - US负载均衡
+- name: Bilibili
+  type: select
+  proxies:
+  - DIRECT
+  - 主代理
+  - 自动选择
+  - 负载均衡
+  - HK自动选择
+  - JP自动选择
+  - KR自动选择
+  - SG自动选择
+  - TW自动选择
+  - US自动选择
+  - HK负载均衡
+  - JP负载均衡
+  - KR负载均衡
+  - SG负载均衡
+  - TW负载均衡
+  - US负载均衡
+- name: Discord
+  type: select
+  proxies:
+  - 主代理
+  - 自动选择
+  - 负载均衡
+  - HK自动选择
+  - JP自动选择
+  - KR自动选择
+  - SG自动选择
+  - TW自动选择
+  - US自动选择
+  - HK负载均衡
+  - JP负载均衡
+  - KR负载均衡
+  - SG负载均衡
+  - TW负载均衡
+  - US负载均衡
+- name: GoogleFCM
+  type: select
+  proxies:
+  - 主代理
+  - 自动选择
+  - 负载均衡
+  - HK自动选择
+  - JP自动选择
+  - KR自动选择
+  - SG自动选择
+  - TW自动选择
+  - US自动选择
+  - HK负载均衡
+  - JP负载均衡
+  - KR负载均衡
+  - SG负载均衡
+  - TW负载均衡
+  - US负载均衡
+- name: Netflix
+  type: select
+  proxies:
+  - 主代理
+  - 自动选择
+  - 负载均衡
+  - HK自动选择
+  - JP自动选择
+  - KR自动选择
+  - SG自动选择
+  - TW自动选择
+  - US自动选择
+  - HK负载均衡
+  - JP负载均衡
+  - KR负载均衡
+  - SG负载均衡
+  - TW负载均衡
+  - US负载均衡
+- name: OpenAI
+  type: select
+  proxies:
+  - 主代理
+  - 自动选择
+  - 负载均衡
+  - HK自动选择
+  - JP自动选择
+  - KR自动选择
+  - SG自动选择
+  - TW自动选择
+  - US自动选择
+  - HK负载均衡
+  - JP负载均衡
+  - KR负载均衡
+  - SG负载均衡
+  - TW负载均衡
+  - US负载均衡
+- name: Speedtest
+  type: select
+  proxies:
+  - 主代理
+  - 自动选择
+  - 负载均衡
+  - HK自动选择
+  - JP自动选择
+  - KR自动选择
+  - SG自动选择
+  - TW自动选择
+  - US自动选择
+  - HK负载均衡
+  - JP负载均衡
+  - KR负载均衡
+  - SG负载均衡
+  - TW负载均衡
+  - US负载均衡
+- name: Spotify
+  type: select
+  proxies:
+  - 主代理
+  - 自动选择
+  - 负载均衡
+  - HK自动选择
+  - JP自动选择
+  - KR自动选择
+  - SG自动选择
+  - TW自动选择
+  - US自动选择
+  - HK负载均衡
+  - JP负载均衡
+  - KR负载均衡
+  - SG负载均衡
+  - TW负载均衡
+  - US负载均衡
+- name: Steam
+  type: select
+  proxies:
+  - DIRECT
+  - 主代理
+  - 自动选择
+  - 负载均衡
+  - HK自动选择
+  - JP自动选择
+  - KR自动选择
+  - SG自动选择
+  - TW自动选择
+  - US自动选择
+  - HK负载均衡
+  - JP负载均衡
+  - KR负载均衡
+  - SG负载均衡
+  - TW负载均衡
+  - US负载均衡
+- name: Telegram
+  type: select
+  proxies:
+  - 主代理
+  - 自动选择
+  - 负载均衡
+  - HK自动选择
+  - JP自动选择
+  - KR自动选择
+  - SG自动选择
+  - TW自动选择
+  - US自动选择
+  - HK负载均衡
+  - JP负载均衡
+  - KR负载均衡
+  - SG负载均衡
+  - TW负载均衡
+  - US负载均衡
+- name: TikTok
+  type: select
+  proxies:
+  - 主代理
+  - 自动选择
+  - 负载均衡
+  - HK自动选择
+  - JP自动选择
+  - KR自动选择
+  - SG自动选择
+  - TW自动选择
+  - US自动选择
+  - HK负载均衡
+  - JP负载均衡
+  - KR负载均衡
+  - SG负载均衡
+  - TW负载均衡
+  - US负载均衡
+- name: Apple
+  type: select
+  proxies:
+  - DIRECT
+  - 主代理
+  - 自动选择
+  - 负载均衡
+  - HK自动选择
+  - JP自动选择
+  - KR自动选择
+  - SG自动选择
+  - TW自动选择
+  - US自动选择
+  - HK负载均衡
+  - JP负载均衡
+  - KR负载均衡
+  - SG负载均衡
+  - TW负载均衡
+  - US负载均衡
+- name: Google
+  type: select
+  proxies:
+  - 主代理
+  - 自动选择
+  - 负载均衡
+  - HK自动选择
+  - JP自动选择
+  - KR自动选择
+  - SG自动选择
+  - TW自动选择
+  - US自动选择
+  - HK负载均衡
+  - JP负载均衡
+  - KR负载均衡
+  - SG负载均衡
+  - TW负载均衡
+  - US负载均衡
+- name: Microsoft
+  type: select
+  proxies:
+  - DIRECT
+  - 主代理
+  - 自动选择
+  - 负载均衡
+  - HK自动选择
+  - JP自动选择
+  - KR自动选择
+  - SG自动选择
+  - TW自动选择
+  - US自动选择
+  - HK负载均衡
+  - JP负载均衡
+  - KR负载均衡
+  - SG负载均衡
+  - TW负载均衡
+  - US负载均衡
+- name: 黑名单网站
+  type: select
+  proxies:
+  - 主代理
+  - 自动选择
+  - 负载均衡
+  - HK自动选择
+  - JP自动选择
+  - KR自动选择
+  - SG自动选择
+  - TW自动选择
+  - US自动选择
+  - HK负载均衡
+  - JP负载均衡
+  - KR负载均衡
+  - SG负载均衡
+  - TW负载均衡
+  - US负载均衡
+- name: 中国大陆网站
+  type: select
+  proxies:
+  - DIRECT
+  - 主代理
+  - 自动选择
+  - 负载均衡
+  - HK自动选择
+  - JP自动选择
+  - KR自动选择
+  - SG自动选择
+  - TW自动选择
+  - US自动选择
+  - HK负载均衡
+  - JP负载均衡
+  - KR负载均衡
+  - SG负载均衡
+  - TW负载均衡
+  - US负载均衡
+rule-providers:
+  Bahamut-Site:
+    type: http
+    behavior: domain
+    format: mrs
+    url: https://cdn.jsdmirror.com/gh/HosheaPDNX/rule-set@V2.0.0/mihomo/Bahamut/Bahamut-Site.mrs
+    path: ./ruleset/Bahamut-Site.mrs
+    proxy: DIRECT
+    interval: 86400
+  Apple-Site:
+    type: http
+    behavior: domain
+    format: mrs
+    url: https://cdn.jsdmirror.com/gh/HosheaPDNX/rule-set@V2.0.0/mihomo/Apple/Apple-Site.mrs
+    path: ./ruleset/Apple-Site.mrs
+    proxy: DIRECT
+    interval: 86400
+  Apple-IP:
+    type: http
+    behavior: ipcidr
+    format: mrs
+    url: https://cdn.jsdmirror.com/gh/HosheaPDNX/rule-set@V2.0.0/mihomo/Apple/Apple-IP.mrs
+    path: ./ruleset/Apple-IP.mrs
+    proxy: DIRECT
+    interval: 86400
+  Bilibili-Site:
+    type: http
+    behavior: domain
+    format: mrs
+    url: https://cdn.jsdmirror.com/gh/HosheaPDNX/rule-set@V2.0.0/mihomo/Bilibili/Bilibili-Site.mrs
+    path: ./ruleset/Bilibili-Site.mrs
+    proxy: DIRECT
+    interval: 86400
+  Bilibili-IP:
+    type: http
+    behavior: ipcidr
+    format: mrs
+    url: https://cdn.jsdmirror.com/gh/HosheaPDNX/rule-set@V2.0.0/mihomo/Bilibili/Bilibili-IP.mrs
+    path: ./ruleset/Bilibili-IP.mrs
+    proxy: DIRECT
+    interval: 86400
+  China-Site:
+    type: http
+    behavior: domain
+    format: mrs
+    url: https://cdn.jsdmirror.com/gh/HosheaPDNX/rule-set@V2.0.0/mihomo/China/China-Site.mrs
+    path: ./ruleset/China-Site.mrs
+    proxy: DIRECT
+    interval: 86400
+  China-IP:
+    type: http
+    behavior: ipcidr
+    format: mrs
+    url: https://cdn.jsdmirror.com/gh/HosheaPDNX/rule-set@V2.0.0/mihomo/China/China-IP.mrs
+    path: ./ruleset/China-IP.mrs
+    proxy: DIRECT
+    interval: 86400
+  Discord-Site:
+    type: http
+    behavior: domain
+    format: mrs
+    url: https://cdn.jsdmirror.com/gh/HosheaPDNX/rule-set@V2.0.0/mihomo/Discord/Discord-Site.mrs
+    path: ./ruleset/Discord-Site.mrs
+    proxy: DIRECT
+    interval: 86400
+  GFWList-Site:
+    type: http
+    behavior: domain
+    format: mrs
+    url: https://cdn.jsdmirror.com/gh/HosheaPDNX/rule-set@V2.0.0/mihomo/GFWList/GFWList-Site.mrs
+    path: ./ruleset/GFWList-Site.mrs
+    proxy: DIRECT
+    interval: 86400
+  Google-Site:
+    type: http
+    behavior: domain
+    format: mrs
+    url: https://cdn.jsdmirror.com/gh/HosheaPDNX/rule-set@V2.0.0/mihomo/Google/Google-Site.mrs
+    path: ./ruleset/Google-Site.mrs
+    proxy: DIRECT
+    interval: 86400
+  Google-IP:
+    type: http
+    behavior: ipcidr
+    format: mrs
+    url: https://cdn.jsdmirror.com/gh/HosheaPDNX/rule-set@V2.0.0/mihomo/Google/Google-IP.mrs
+    path: ./ruleset/Google-IP.mrs
+    proxy: DIRECT
+    interval: 86400
+  GoogleFCM-Site:
+    type: http
+    behavior: domain
+    format: mrs
+    url: https://cdn.jsdmirror.com/gh/HosheaPDNX/rule-set@V2.0.0/mihomo/GoogleFCM/GoogleFCM-Site.mrs
+    path: ./ruleset/GoogleFCM-Site.mrs
+    proxy: DIRECT
+    interval: 86400
+  Local-IP:
+    type: http
+    behavior: ipcidr
+    format: mrs
+    url: https://cdn.jsdmirror.com/gh/HosheaPDNX/rule-set@V2.0.0/mihomo/Local/Local-IP.mrs
+    path: ./ruleset/Local-IP.mrs
+    proxy: DIRECT
+    interval: 86400
+  Microsoft-Site:
+    type: http
+    behavior: domain
+    format: mrs
+    url: https://cdn.jsdmirror.com/gh/HosheaPDNX/rule-set@V2.0.0/mihomo/Microsoft/Microsoft-Site.mrs
+    path: ./ruleset/Microsoft-Site.mrs
+    proxy: DIRECT
+    interval: 86400
+  Netflix-Site:
+    type: http
+    behavior: domain
+    format: mrs
+    url: https://cdn.jsdmirror.com/gh/HosheaPDNX/rule-set@V2.0.0/mihomo/Netflix/Netflix-Site.mrs
+    path: ./ruleset/Netflix-Site.mrs
+    proxy: DIRECT
+    interval: 86400
+  Netflix-IP:
+    type: http
+    behavior: ipcidr
+    format: mrs
+    url: https://cdn.jsdmirror.com/gh/HosheaPDNX/rule-set@V2.0.0/mihomo/Netflix/Netflix-IP.mrs
+    path: ./ruleset/Netflix-IP.mrs
+    proxy: DIRECT
+    interval: 86400
+  OpenAI-Site:
+    type: http
+    behavior: domain
+    format: mrs
+    url: https://cdn.jsdmirror.com/gh/HosheaPDNX/rule-set@V2.0.0/mihomo/OpenAI/OpenAI-Site.mrs
+    path: ./ruleset/OpenAI-Site.mrs
+    proxy: DIRECT
+    interval: 86400
+  OpenAI-IP:
+    type: http
+    behavior: ipcidr
+    format: mrs
+    url: https://cdn.jsdmirror.com/gh/HosheaPDNX/rule-set@V2.0.0/mihomo/OpenAI/OpenAI-IP.mrs
+    path: ./ruleset/OpenAI-IP.mrs
+    proxy: DIRECT
+    interval: 86400
+  Speedtest-Site:
+    type: http
+    behavior: domain
+    format: mrs
+    url: https://cdn.jsdmirror.com/gh/HosheaPDNX/rule-set@V2.0.0/mihomo/Speedtest/Speedtest-Site.mrs
+    path: ./ruleset/Speedtest-Site.mrs
+    proxy: DIRECT
+    interval: 86400
+  Spotify-Site:
+    type: http
+    behavior: domain
+    format: mrs
+    url: https://cdn.jsdmirror.com/gh/HosheaPDNX/rule-set@V2.0.0/mihomo/Spotify/Spotify-Site.mrs
+    path: ./ruleset/Spotify-Site.mrs
+    proxy: DIRECT
+    interval: 86400
+  Spotify-IP:
+    type: http
+    behavior: ipcidr
+    format: mrs
+    url: https://cdn.jsdmirror.com/gh/HosheaPDNX/rule-set@V2.0.0/mihomo/Spotify/Spotify-IP.mrs
+    path: ./ruleset/Spotify-IP.mrs
+    proxy: DIRECT
+    interval: 86400
+  Steam-Site:
+    type: http
+    behavior: domain
+    format: mrs
+    url: https://cdn.jsdmirror.com/gh/HosheaPDNX/rule-set@V2.0.0/mihomo/Steam/Steam-Site.mrs
+    path: ./ruleset/Steam-Site.mrs
+    proxy: DIRECT
+    interval: 86400
+  Telegram-Site:
+    type: http
+    behavior: domain
+    format: mrs
+    url: https://cdn.jsdmirror.com/gh/HosheaPDNX/rule-set@V2.0.0/mihomo/Telegram/Telegram-Site.mrs
+    path: ./ruleset/Telegram-Site.mrs
+    proxy: DIRECT
+    interval: 86400
+  Telegram-IP:
+    type: http
+    behavior: ipcidr
+    format: mrs
+    url: https://cdn.jsdmirror.com/gh/HosheaPDNX/rule-set@V2.0.0/mihomo/Telegram/Telegram-IP.mrs
+    path: ./ruleset/Telegram-IP.mrs
+    proxy: DIRECT
+    interval: 86400
+  TikTok-Site:
+    type: http
+    behavior: domain
+    format: mrs
+    url: https://cdn.jsdmirror.com/gh/HosheaPDNX/rule-set@V2.0.0/mihomo/TikTok/TikTok-Site.mrs
+    path: ./ruleset/TikTok-Site.mrs
+    proxy: DIRECT
+    interval: 86400
+rules:
+- AND,((DST-PORT,443),(NETWORK,UDP)),REJECT
+- DOMAIN,ntp.aliyun.com,DIRECT
+- DOMAIN,proxy.sakuraikaede.com,DIRECT
+- DOMAIN,converter-mitce.sakuraikaede.com,DIRECT
+- DOMAIN-KEYWORD,msftconnecttest.com,主代理
+- DOMAIN-KEYWORD,msftncsi.com,主代理
+- DOMAIN-KEYWORD,googleapis,Google
+- RULE-SET,Bahamut-Site,Bahamut
+- RULE-SET,Bilibili-Site,Bilibili
+- RULE-SET,Discord-Site,Discord
+- RULE-SET,GoogleFCM-Site,GoogleFCM
+- RULE-SET,Netflix-Site,Netflix
+- RULE-SET,OpenAI-Site,OpenAI
+- RULE-SET,Speedtest-Site,Speedtest
+- RULE-SET,Spotify-Site,Spotify
+- RULE-SET,Steam-Site,Steam
+- RULE-SET,Telegram-Site,Telegram
+- RULE-SET,TikTok-Site,TikTok
+- RULE-SET,Apple-Site,Apple
+- RULE-SET,Google-Site,Google
+- RULE-SET,Microsoft-Site,Microsoft
+- RULE-SET,GFWList-Site,黑名单网站
+- RULE-SET,China-Site,中国大陆网站
+- RULE-SET,Local-IP,DIRECT,no-resolve
+- RULE-SET,Bilibili-IP,Bilibili
+- RULE-SET,Netflix-IP,Netflix
+- RULE-SET,OpenAI-IP,OpenAI
+- RULE-SET,Spotify-IP,Spotify
+- RULE-SET,Telegram-IP,Telegram
+- RULE-SET,Apple-IP,Apple
+- RULE-SET,Google-IP,Google
+- RULE-SET,China-IP,中国大陆网站
+- MATCH,主代理
