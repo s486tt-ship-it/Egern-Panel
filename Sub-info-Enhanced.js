@@ -5,6 +5,8 @@
  * Version: 2.0.0
  */
 
+const SLOT_SEPARATOR = "<<EgernPanelSlot>>";
+const FIELD_SEPARATOR = "<<EgernPanelField>>";
 const MAX_SUBSCRIPTIONS = 10;
 const DEFAULT_PANEL_TITLE = "机场订阅";
 const DEFAULT_PANEL_ICON = "antenna.radiowaves.left.and.right.circle.fill";
@@ -85,6 +87,18 @@ function parseArguments(argument) {
 
   if (!argument) return fallback;
 
+  if (argument.indexOf("payload=") === 0) {
+    const payload = argument.slice("payload=".length);
+    const slots = parseSlotPayload(payload);
+    normalizeShiftedSlots(slots);
+    return {
+      panelTitle: DEFAULT_PANEL_TITLE,
+      panelIcon: DEFAULT_PANEL_ICON,
+      panelColor: DEFAULT_PANEL_COLOR,
+      slots,
+    };
+  }
+
   const params = parseKeyValueArgument(argument);
   const slots = [];
 
@@ -119,6 +133,22 @@ function parseArguments(argument) {
     panelColor: params.panel_color || DEFAULT_PANEL_COLOR,
     slots,
   };
+}
+
+function parseSlotPayload(payload) {
+  if (!payload) return [];
+
+  return payload
+    .split(SLOT_SEPARATOR)
+    .map((entry) => {
+      const [name = "", url = "", resetDay = ""] = entry.split(FIELD_SEPARATOR);
+      return {
+        name: sanitizeTemplateValue(name),
+        url: sanitizeTemplateValue(url),
+        resetDay: sanitizeTemplateValue(resetDay),
+      };
+    })
+    .filter((slot) => slot.name || slot.url || slot.resetDay);
 }
 
 function parseKeyValueArgument(argument) {
