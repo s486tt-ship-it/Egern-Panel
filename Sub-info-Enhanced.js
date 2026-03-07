@@ -5,10 +5,8 @@
  * Version: 2.0.0
  */
 
-const SLOT_SEPARATOR = "<<EgernPanelSlot>>";
-const FIELD_SEPARATOR = "<<EgernPanelField>>";
 const MAX_SUBSCRIPTIONS = 10;
-const DEFAULT_PANEL_TITLE = "Subscriptions";
+const DEFAULT_PANEL_TITLE = "机场订阅";
 const DEFAULT_PANEL_ICON = "antenna.radiowaves.left.and.right.circle.fill";
 const DEFAULT_PANEL_COLOR = "#00C2A8";
 
@@ -57,7 +55,7 @@ const rawArgument = typeof $argument === "string" ? $argument.trim() : "";
   if (!slots.length) {
     $done({
       title: context.panelTitle,
-      content: "Please configure at least one subscription URL.",
+      content: "请至少填写一个机场订阅链接。",
       icon: context.panelIcon,
       "icon-color": context.panelColor,
     });
@@ -87,36 +85,29 @@ function parseArguments(argument) {
 
   if (!argument) return fallback;
 
-  if (argument.indexOf("slots=") === 0) {
-    const payload = argument.slice("slots=".length);
-    return {
-      panelTitle: DEFAULT_PANEL_TITLE,
-      panelIcon: DEFAULT_PANEL_ICON,
-      panelColor: DEFAULT_PANEL_COLOR,
-      slots: parseSlotPayload(payload),
-    };
-  }
-
   const params = parseKeyValueArgument(argument);
   const slots = [];
 
   if (params.url) {
     slots.push({
-      name: params.title || params.name || "",
-      url: params.url,
-      resetDay: params.reset_day || params.resetDay || "",
+      name: sanitizeTemplateValue(params.title || params.name || ""),
+      url: sanitizeTemplateValue(params.url),
+      resetDay: sanitizeTemplateValue(params.reset_day || params.resetDay || ""),
     });
   }
 
   for (let index = 1; index <= MAX_SUBSCRIPTIONS; index += 1) {
     slots.push({
-      name: params[`title${index}`] || params[`name${index}`] || params[`NAME${index}`] || "",
-      url: params[`url${index}`] || params[`URL${index}`] || "",
-      resetDay:
+      name: sanitizeTemplateValue(
+        params[`title${index}`] || params[`name${index}`] || params[`NAME${index}`] || ""
+      ),
+      url: sanitizeTemplateValue(params[`url${index}`] || params[`URL${index}`] || ""),
+      resetDay: sanitizeTemplateValue(
         params[`resetDay${index}`] ||
-        params[`reset_day${index}`] ||
-        params[`RESET_Day${index}`] ||
-        "",
+          params[`reset_day${index}`] ||
+          params[`RESET_Day${index}`] ||
+          ""
+      ),
     });
   }
 
@@ -126,22 +117,6 @@ function parseArguments(argument) {
     panelColor: params.panel_color || DEFAULT_PANEL_COLOR,
     slots,
   };
-}
-
-function parseSlotPayload(payload) {
-  if (!payload) return [];
-
-  return payload
-    .split(SLOT_SEPARATOR)
-    .map((entry) => {
-      const [name = "", url = "", resetDay = ""] = entry.split(FIELD_SEPARATOR);
-      return {
-        name: safeDecode(name).trim(),
-        url: safeDecode(url).trim(),
-        resetDay: safeDecode(resetDay).trim(),
-      };
-    })
-    .filter((slot) => slot.url);
 }
 
 function parseKeyValueArgument(argument) {
@@ -165,6 +140,12 @@ function safeDecode(value) {
   }
 }
 
+function sanitizeTemplateValue(value) {
+  const decoded = safeDecode(value).trim();
+  if (/^\{\{\{[^}]+\}\}\}$/.test(decoded)) return "";
+  return decoded;
+}
+
 async function buildPanelSection(slot) {
   const name = slot.name || inferNameFromUrl(slot.url);
   const resetDay = normalizeResetDay(slot.resetDay);
@@ -173,7 +154,7 @@ async function buildPanelSection(slot) {
     .catch((err) => [err, null]);
 
   if (error || !info) {
-    return `${name}\nError: ${String(error || "subscription-userinfo missing")}`;
+    return `${name}\n获取失败：${String(error || "subscription-userinfo missing")}`;
   }
 
   const used = Number(info.upload || 0) + Number(info.download || 0);
@@ -181,15 +162,15 @@ async function buildPanelSection(slot) {
   const percent = total > 0 ? `${((used / total) * 100).toFixed(1)}%` : "--";
   const lines = [
     name,
-    `Used: ${bytesToSize(used)} / ${bytesToSize(total)} (${percent})`,
+    `已用：${bytesToSize(used)} / ${bytesToSize(total)} (${percent})`,
   ];
 
   if (info.expire) {
-    lines.push(`Expire: ${formatDate(info.expire)}`);
+    lines.push(`到期：${formatDate(info.expire)}`);
   }
 
   if (resetDay) {
-    lines.push(`Reset: ${getRemainingDays(resetDay)} day(s) left`);
+    lines.push(`重置：剩余 ${getRemainingDays(resetDay)} 天`);
   }
 
   return lines.join("\n");
@@ -313,7 +294,7 @@ function normalizeResetDay(value) {
 
 function inferNameFromUrl(url) {
   const matched = String(url).match(/^https?:\/\/([^\/?#]+)/i);
-  return matched ? matched[1] : "Unnamed Subscription";
+  return matched ? matched[1] : "未命名订阅";
 }
 
 function getRemainingDays(resetDay) {

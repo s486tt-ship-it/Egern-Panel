@@ -1,13 +1,13 @@
-#!name=Subscription Panel (10 Slots)
-#!desc=Direct subscription URLs, up to 10 enabled subscriptions, unused slots stay hidden.
-#!category=Subscription Info
+#!name=机场流量信息面板（十订阅版）
+#!desc=直接填写订阅链接，最多支持 10 个订阅，未启用的订阅自动隐藏
+#!category=机场流量信息
 #!arguments=NAME1:,URL1:,RESET_Day1:,NAME2:,URL2:,RESET_Day2:,NAME3:,URL3:,RESET_Day3:,NAME4:,URL4:,RESET_Day4:,NAME5:,URL5:,RESET_Day5:,NAME6:,URL6:,RESET_Day6:,NAME7:,URL7:,RESET_Day7:,NAME8:,URL8:,RESET_Day8:,NAME9:,URL9:,RESET_Day9:,NAME10:,URL10:,RESET_Day10:
-#!arguments-desc=[Setup]\n\n1. Paste the original subscription URL directly. No URL encoding is required.\n2. Up to 10 subscriptions are supported. Empty URL slots are hidden automatically.\n3. NAME is optional. The script falls back to the subscription host name.\n4. RESET_Day is optional. Use 1-31 to show days until the next reset.\n5. The script retries with clash-verge-rev / clash-verge / mihomo request patterns for better compatibility.\n\nExample:\n- NAME1: Airport A\n- URL1: https://example.com/api/v1/client/subscribe?token=xxxxx\n- RESET_Day1: 26
-# Updated: 2026-03-08
-# Version: 2.0.0
+#!arguments-desc=[参数设置]\n\n1. 直接填写原始机场订阅链接，不需要再做 URL 编码。\n2. 最多支持 10 个订阅，未填写 URL 的订阅会自动隐藏。\n3. NAME 可留空，脚本会自动回退为订阅链接域名。\n4. RESET_Day 可留空；填写 1-31 时显示距离下次重置的天数。\n5. 脚本会自动尝试 clash-verge-rev / clash-verge / mihomo 的请求方式提升兼容性。\n\n示例：\n- NAME1：机场 A\n- URL1：https://example.com/api/v1/client/subscribe?token=xxxxx\n- RESET_Day1：26
+# 更新日期：2026-03-08
+# 版本：2.0.1
 
 [Panel]
-Subscriptions=script-name=Subscriptions,update-interval=3600
+机场订阅=script-name=机场订阅,update-interval=3600
 
 [Script]
-Subscriptions=type=generic,timeout=20,script-path=https://raw.githubusercontent.com/s486tt-ship-it/Egern-Panel/main/Sub-info-Enhanced.js,script-update-interval=0,argument=slots={{{NAME1}}}<<EgernPanelField>>{{{URL1}}}<<EgernPanelField>>{{{RESET_Day1}}}<<EgernPanelSlot>>{{{NAME2}}}<<EgernPanelField>>{{{URL2}}}<<EgernPanelField>>{{{RESET_Day2}}}<<EgernPanelSlot>>{{{NAME3}}}<<EgernPanelField>>{{{URL3}}}<<EgernPanelField>>{{{RESET_Day3}}}<<EgernPanelSlot>>{{{NAME4}}}<<EgernPanelField>>{{{URL4}}}<<EgernPanelField>>{{{RESET_Day4}}}<<EgernPanelSlot>>{{{NAME5}}}<<EgernPanelField>>{{{URL5}}}<<EgernPanelField>>{{{RESET_Day5}}}<<EgernPanelSlot>>{{{NAME6}}}<<EgernPanelField>>{{{URL6}}}<<EgernPanelField>>{{{RESET_Day6}}}<<EgernPanelSlot>>{{{NAME7}}}<<EgernPanelField>>{{{URL7}}}<<EgernPanelField>>{{{RESET_Day7}}}<<EgernPanelSlot>>{{{NAME8}}}<<EgernPanelField>>{{{URL8}}}<<EgernPanelField>>{{{RESET_Day8}}}<<EgernPanelSlot>>{{{NAME9}}}<<EgernPanelField>>{{{URL9}}}<<EgernPanelField>>{{{RESET_Day9}}}<<EgernPanelSlot>>{{{NAME10}}}<<EgernPanelField>>{{{URL10}}}<<EgernPanelField>>{{{RESET_Day10}}}
+机场订阅=type=generic,timeout=20,script-path=https://raw.githubusercontent.com/s486tt-ship-it/Egern-Panel/main/Sub-info-Enhanced.js,script-update-interval=0,argument=title1={{{NAME1}}}&url1={{{URL1}}}&reset_day1={{{RESET_Day1}}}&title2={{{NAME2}}}&url2={{{URL2}}}&reset_day2={{{RESET_Day2}}}&title3={{{NAME3}}}&url3={{{URL3}}}&reset_day3={{{RESET_Day3}}}&title4={{{NAME4}}}&url4={{{URL4}}}&reset_day4={{{RESET_Day4}}}&title5={{{NAME5}}}&url5={{{URL5}}}&reset_day5={{{RESET_Day5}}}&title6={{{NAME6}}}&url6={{{URL6}}}&reset_day6={{{RESET_Day6}}}&title7={{{NAME7}}}&url7={{{URL7}}}&reset_day7={{{RESET_Day7}}}&title8={{{NAME8}}}&url8={{{URL8}}}&reset_day8={{{RESET_Day8}}}&title9={{{NAME9}}}&url9={{{URL9}}}&reset_day9={{{RESET_Day9}}}&title10={{{NAME10}}}&url10={{{URL10}}}&reset_day10={{{RESET_Day10}}}
