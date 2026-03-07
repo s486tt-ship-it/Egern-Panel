@@ -111,6 +111,8 @@ function parseArguments(argument) {
     });
   }
 
+  normalizeShiftedSlots(slots);
+
   return {
     panelTitle: params.panel_title || DEFAULT_PANEL_TITLE,
     panelIcon: params.panel_icon || DEFAULT_PANEL_ICON,
@@ -143,7 +145,29 @@ function safeDecode(value) {
 function sanitizeTemplateValue(value) {
   const decoded = safeDecode(value).trim();
   if (/^\{\{\{[^}]+\}\}\}$/.test(decoded)) return "";
+  if (/^机场\d+$/i.test(decoded)) return "";
+  if (/^订阅链接\d+$/i.test(decoded)) return "";
+  if (/^重置日\d+$/i.test(decoded)) return "";
   return decoded;
+}
+
+function normalizeShiftedSlots(slots) {
+  for (let index = 0; index < slots.length - 1; index += 1) {
+    const current = slots[index];
+    const next = slots[index + 1];
+
+    if (!current || !next) continue;
+    if (!current.resetDay || normalizeResetDay(current.resetDay)) continue;
+    if (!isLikelyUrl(next.name) || next.url) continue;
+
+    next.url = next.name;
+    next.name = current.resetDay;
+    current.resetDay = "";
+  }
+}
+
+function isLikelyUrl(value) {
+  return /^https?:\/\//i.test(String(value || "").trim());
 }
 
 async function buildPanelSection(slot) {
@@ -230,6 +254,7 @@ function buildUrlVariants(url) {
 
 function withQueryParam(url, key, value) {
   if (!url) return url;
+  if (!isLikelyUrl(url)) return "";
   if (new RegExp(`([?&])${escapeRegExp(key)}=`).test(url)) return url;
   return `${url}${url.indexOf("?") === -1 ? "?" : "&"}${key}=${encodeURIComponent(value)}`;
 }
