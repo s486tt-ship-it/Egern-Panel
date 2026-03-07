@@ -1,19 +1,13 @@
-#!name=机场流量信息(三机场版)
-#!desc=同时显示三个机场的剩余流量信息以及套餐到期日期
-#!category=机场流量信息
-#!arguments=NAME1:机场1,URL1:编码后的机场订阅1,RESET_Day1:重置日期1,ICON1:externaldrive.fill.badge.icloud,COLOR1:#FFB6C1,NAME2:机场2,URL2:编码后的机场订阅2,RESET_Day2:重置日期2,ICON2:externaldrive.fill.badge.icloud,COLOR2:#87CEEB,NAME3:机场3,URL3:编码后的机场订阅3,RESET_Day3:重置日期3,ICON3:externaldrive.fill.badge.icloud,COLOR3:#98FB98
-#!arguments-desc=[参数设置]\n\n✈️ 机场1 设置\n⓵ NAME1: 可修改成你第一个机场的名字。\n⓶ URL1: 编码后的第一个机场订阅链接。\n⓷ RESET_DAY1: 第一个机场流量每月重置的日期,如26号就写26,不设置则不显示流量重置日,仅显示到期日期。\n⓸ ICON1: 自定义第一个面板图标,需为有效的SFSymbolName,如不设置则默认。\n⓹ COLOR1: 自定义第一个图标颜色,需为颜色的HEX编码,如不设置则默认为"#FFB6C1"。\n\n✈️ 机场2 设置\n⓵ NAME2: 可修改成你第二个机场的名字。\n⓶ URL2: 编码后的第二个机场订阅链接。\n⓷ RESET_DAY2: 第二个机场流量每月重置的日期,如26号就写26,不设置则不显示流量重置日,仅显示到期日期。\n⓸ ICON2: 自定义第二个面板图标,需为有效的SFSymbolName,如不设置则默认。\n⓹ COLOR2: 自定义第二个图标颜色,需为颜色的HEX编码,如不设置则默认为"#87CEEB"。\n\n✈️ 机场3 设置\n⓵ NAME3: 可修改成你第三个机场的名字。\n⓶ URL3: 编码后的第三个机场订阅链接。\n⓷ RESET_DAY3: 第三个机场流量每月重置的日期,如26号就写26,不设置则不显示流量重置日,仅显示到期日期。\n⓸ ICON3: 自定义第三个面板图标,需为有效的SFSymbolName,如不设置则默认。\n⓹ COLOR3: 自定义第三个图标颜色,需为颜色的HEX编码,如不设置则默认为"#98FB98"。
-# 更新日期：2026.03.07
-# 版本：6.0
-# 原始版本由 @mieqq 编写，@Rabbit-Spec 修改，@QingRex 转制
-# 三机场版本由 @s486tt-ship-it 改造
+#!name=Subscription Panel (10 Slots)
+#!desc=Direct subscription URLs, up to 10 enabled subscriptions, unused slots stay hidden.
+#!category=Subscription Info
+#!arguments=NAME1:,URL1:,RESET_Day1:,NAME2:,URL2:,RESET_Day2:,NAME3:,URL3:,RESET_Day3:,NAME4:,URL4:,RESET_Day4:,NAME5:,URL5:,RESET_Day5:,NAME6:,URL6:,RESET_Day6:,NAME7:,URL7:,RESET_Day7:,NAME8:,URL8:,RESET_Day8:,NAME9:,URL9:,RESET_Day9:,NAME10:,URL10:,RESET_Day10:
+#!arguments-desc=[Setup]\n\n1. Paste the original subscription URL directly. No URL encoding is required.\n2. Up to 10 subscriptions are supported. Empty URL slots are hidden automatically.\n3. NAME is optional. The script falls back to the subscription host name.\n4. RESET_Day is optional. Use 1-31 to show days until the next reset.\n5. The script retries with clash-verge-rev / clash-verge / mihomo request patterns for better compatibility.\n\nExample:\n- NAME1: Airport A\n- URL1: https://example.com/api/v1/client/subscribe?token=xxxxx\n- RESET_Day1: 26
+# Updated: 2026-03-08
+# Version: 2.0.0
 
 [Panel]
-{{{NAME1}}}=script-name={{{NAME1}}},update-interval=3600
-{{{NAME2}}}=script-name={{{NAME2}}},update-interval=3600
-{{{NAME3}}}=script-name={{{NAME3}}},update-interval=3600
+Subscriptions=script-name=Subscriptions,update-interval=3600
 
 [Script]
-{{{NAME1}}}=type=generic,timeout=10,script-path=https://raw.githubusercontent.com/s486tt-ship-it/Egern-Panel/main/Sub-info-Enhanced.js,script-update-interval=0,argument=url={{{URL1}}}&reset_day={{{RESET_Day1}}}&title={{{NAME1}}}&icon={{{ICON1}}}&color={{{COLOR1}}}
-{{{NAME2}}}=type=generic,timeout=10,script-path=https://raw.githubusercontent.com/s486tt-ship-it/Egern-Panel/main/Sub-info-Enhanced.js,script-update-interval=0,argument=url={{{URL2}}}&reset_day={{{RESET_Day2}}}&title={{{NAME2}}}&icon={{{ICON2}}}&color={{{COLOR2}}}
-{{{NAME3}}}=type=generic,timeout=10,script-path=https://raw.githubusercontent.com/s486tt-ship-it/Egern-Panel/main/Sub-info-Enhanced.js,script-update-interval=0,argument=url={{{URL3}}}&reset_day={{{RESET_Day3}}}&title={{{NAME3}}}&icon={{{ICON3}}}&color={{{COLOR3}}}
+Subscriptions=type=generic,timeout=20,script-path=https://raw.githubusercontent.com/s486tt-ship-it/Egern-Panel/main/Sub-info-Enhanced.js,script-update-interval=0,argument=slots={{{NAME1}}}<<EgernPanelField>>{{{URL1}}}<<EgernPanelField>>{{{RESET_Day1}}}<<EgernPanelSlot>>{{{NAME2}}}<<EgernPanelField>>{{{URL2}}}<<EgernPanelField>>{{{RESET_Day2}}}<<EgernPanelSlot>>{{{NAME3}}}<<EgernPanelField>>{{{URL3}}}<<EgernPanelField>>{{{RESET_Day3}}}<<EgernPanelSlot>>{{{NAME4}}}<<EgernPanelField>>{{{URL4}}}<<EgernPanelField>>{{{RESET_Day4}}}<<EgernPanelSlot>>{{{NAME5}}}<<EgernPanelField>>{{{URL5}}}<<EgernPanelField>>{{{RESET_Day5}}}<<EgernPanelSlot>>{{{NAME6}}}<<EgernPanelField>>{{{URL6}}}<<EgernPanelField>>{{{RESET_Day6}}}<<EgernPanelSlot>>{{{NAME7}}}<<EgernPanelField>>{{{URL7}}}<<EgernPanelField>>{{{RESET_Day7}}}<<EgernPanelSlot>>{{{NAME8}}}<<EgernPanelField>>{{{URL8}}}<<EgernPanelField>>{{{RESET_Day8}}}<<EgernPanelSlot>>{{{NAME9}}}<<EgernPanelField>>{{{URL9}}}<<EgernPanelField>>{{{RESET_Day9}}}<<EgernPanelSlot>>{{{NAME10}}}<<EgernPanelField>>{{{URL10}}}<<EgernPanelField>>{{{RESET_Day10}}}

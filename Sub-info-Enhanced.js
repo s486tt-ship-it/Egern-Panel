@@ -1,151 +1,354 @@
 /*
- * 原脚本由@mieqq编写
- * 原脚本地址：https://raw.githubusercontent.com/mieqq/mieqq/master/sub_info_panel.js
- * 由@Rabbit-Spec修改
- * 由@s486tt-ship-it进行增强优化防抖与兼容性 (2026.03.07)
- * 版本：1.6
-*/
+ * Subscription panel script.
+ * Reworked for up to 10 subscriptions with direct URL input
+ * and broader clash-verge-rev style compatibility.
+ * Version: 2.0.0
+ */
 
-let args = getArgs();
+const SLOT_SEPARATOR = "<<EgernPanelSlot>>";
+const FIELD_SEPARATOR = "<<EgernPanelField>>";
+const MAX_SUBSCRIPTIONS = 10;
+const DEFAULT_PANEL_TITLE = "Subscriptions";
+const DEFAULT_PANEL_ICON = "antenna.radiowaves.left.and.right.circle.fill";
+const DEFAULT_PANEL_COLOR = "#00C2A8";
+
+const REQUEST_PROFILES = [
+  {
+    method: "head",
+    headers: {
+      "User-Agent": "Quantumult%20X/1.5.2",
+      Accept: "*/*",
+    },
+  },
+  {
+    method: "get",
+    headers: {
+      "User-Agent": "clash-verge-rev/2.3.1",
+      Accept: "application/x-yaml,text/plain,*/*",
+      "Profile-Update-Interval": "24",
+      "Cache-Control": "no-cache",
+      Pragma: "no-cache",
+    },
+  },
+  {
+    method: "get",
+    headers: {
+      "User-Agent": "clash-verge/v2.0.0",
+      Accept: "application/x-yaml,text/plain,*/*",
+      "Profile-Update-Interval": "24",
+    },
+  },
+  {
+    method: "get",
+    headers: {
+      "User-Agent": "mihomo/1.19.3",
+      Accept: "application/x-yaml,text/plain,*/*",
+      "Profile-Update-Interval": "24",
+    },
+  },
+];
+
+const rawArgument = typeof $argument === "string" ? $argument.trim() : "";
 
 (async () => {
-  let info = await getDataInfo(args.url);
-  if (!info) $done();
-  let resetDayLeft = getRmainingDays(parseInt(args["reset_day"]));
+  const context = parseArguments(rawArgument);
+  const slots = context.slots.filter((slot) => slot.url).slice(0, MAX_SUBSCRIPTIONS);
 
-  let used = info.download + info.upload;
-  let total = info.total;
-  let expire = args.expire || info.expire;
-  let content = [`用量：${bytesToSize(used)} | ${bytesToSize(total)}`];
-
-  if (resetDayLeft) {
-    content.push(`重置：剩余${resetDayLeft}天`);
-  }
-  if (expire && expire !== "false") {
-    if (/^[\d.]+$/.test(expire)) expire *= 1000;
-    content.push(`到期：${formatTime(expire)}`);
+  if (!slots.length) {
+    $done({
+      title: context.panelTitle,
+      content: "Please configure at least one subscription URL.",
+      icon: context.panelIcon,
+      "icon-color": context.panelColor,
+    });
+    return;
   }
 
-  let now = new Date();
-  let hour = now.getHours();
-  let minutes = now.getMinutes();
-  hour = hour > 9 ? hour : "0" + hour;
-  minutes = minutes > 9 ? minutes : "0" + minutes;
+  const sections = [];
+  for (const slot of slots) {
+    sections.push(await buildPanelSection(slot));
+  }
 
   $done({
-    title: `${args.title} | ${hour}:${minutes}`,
-    content: content.join("\n"),
-    icon: args.icon || "airplane.circle",
-    "icon-color": args.color || "#007aff",
+    title: `${context.panelTitle} | ${formatClock(new Date())}`,
+    content: sections.join("\n\n"),
+    icon: context.panelIcon,
+    "icon-color": context.panelColor,
   });
 })();
 
-function getArgs() {
-  return Object.fromEntries(
-    $argument
-      .split("&")
-      .map((item) => item.split("="))
-      .map(([k, v]) => [k, decodeURIComponent(v)])
-  );
+function parseArguments(argument) {
+  const fallback = {
+    panelTitle: DEFAULT_PANEL_TITLE,
+    panelIcon: DEFAULT_PANEL_ICON,
+    panelColor: DEFAULT_PANEL_COLOR,
+    slots: [],
+  };
+
+  if (!argument) return fallback;
+
+  if (argument.indexOf("slots=") === 0) {
+    const payload = argument.slice("slots=".length);
+    return {
+      panelTitle: DEFAULT_PANEL_TITLE,
+      panelIcon: DEFAULT_PANEL_ICON,
+      panelColor: DEFAULT_PANEL_COLOR,
+      slots: parseSlotPayload(payload),
+    };
+  }
+
+  const params = parseKeyValueArgument(argument);
+  const slots = [];
+
+  if (params.url) {
+    slots.push({
+      name: params.title || params.name || "",
+      url: params.url,
+      resetDay: params.reset_day || params.resetDay || "",
+    });
+  }
+
+  for (let index = 1; index <= MAX_SUBSCRIPTIONS; index += 1) {
+    slots.push({
+      name: params[`title${index}`] || params[`name${index}`] || params[`NAME${index}`] || "",
+      url: params[`url${index}`] || params[`URL${index}`] || "",
+      resetDay:
+        params[`resetDay${index}`] ||
+        params[`reset_day${index}`] ||
+        params[`RESET_Day${index}`] ||
+        "",
+    });
+  }
+
+  return {
+    panelTitle: params.panel_title || DEFAULT_PANEL_TITLE,
+    panelIcon: params.panel_icon || DEFAULT_PANEL_ICON,
+    panelColor: params.panel_color || DEFAULT_PANEL_COLOR,
+    slots,
+  };
 }
 
-function getUserInfo(url) {
-  let method = args.method || "head";
-  let request = { headers: { "User-Agent": "Quantumult%20X" }, url };
-  return new Promise((resolve, reject) =>
-    $httpClient[method](request, (err, resp) => {
-      if (err != null) {
-        reject(err);
-        return;
+function parseSlotPayload(payload) {
+  if (!payload) return [];
+
+  return payload
+    .split(SLOT_SEPARATOR)
+    .map((entry) => {
+      const [name = "", url = "", resetDay = ""] = entry.split(FIELD_SEPARATOR);
+      return {
+        name: safeDecode(name).trim(),
+        url: safeDecode(url).trim(),
+        resetDay: safeDecode(resetDay).trim(),
+      };
+    })
+    .filter((slot) => slot.url);
+}
+
+function parseKeyValueArgument(argument) {
+  const result = {};
+  const matcher = /(?:^|&)([^=&]+)=([^&]*)/g;
+  let match;
+
+  while ((match = matcher.exec(argument))) {
+    result[match[1]] = safeDecode(match[2]);
+  }
+
+  return result;
+}
+
+function safeDecode(value) {
+  if (typeof value !== "string") return "";
+  try {
+    return decodeURIComponent(value);
+  } catch (error) {
+    return value;
+  }
+}
+
+async function buildPanelSection(slot) {
+  const name = slot.name || inferNameFromUrl(slot.url);
+  const resetDay = normalizeResetDay(slot.resetDay);
+  const [error, info] = await fetchSubscriptionInfo(slot.url)
+    .then((data) => [null, data])
+    .catch((err) => [err, null]);
+
+  if (error || !info) {
+    return `${name}\nError: ${String(error || "subscription-userinfo missing")}`;
+  }
+
+  const used = Number(info.upload || 0) + Number(info.download || 0);
+  const total = Number(info.total || 0);
+  const percent = total > 0 ? `${((used / total) * 100).toFixed(1)}%` : "--";
+  const lines = [
+    name,
+    `Used: ${bytesToSize(used)} / ${bytesToSize(total)} (${percent})`,
+  ];
+
+  if (info.expire) {
+    lines.push(`Expire: ${formatDate(info.expire)}`);
+  }
+
+  if (resetDay) {
+    lines.push(`Reset: ${getRemainingDays(resetDay)} day(s) left`);
+  }
+
+  return lines.join("\n");
+}
+
+async function fetchSubscriptionInfo(url) {
+  const attempts = buildRequestAttempts(url);
+  const errors = [];
+
+  for (const attempt of attempts) {
+    try {
+      const userInfo = await requestUserInfo(attempt);
+      if (userInfo) return parseSubscriptionUserInfo(userInfo);
+    } catch (error) {
+      errors.push(`[${attempt.method.toUpperCase()}] ${attempt.url} -> ${error}`);
+    }
+  }
+
+  throw new Error(errors[errors.length - 1] || "request failed");
+}
+
+function buildRequestAttempts(url) {
+  const variants = buildUrlVariants(url);
+  const attempts = [];
+
+  for (const variant of variants) {
+    for (const profile of REQUEST_PROFILES) {
+      attempts.push({
+        url: variant,
+        method: profile.method,
+        headers: profile.headers,
+      });
+    }
+  }
+
+  return attempts;
+}
+
+function buildUrlVariants(url) {
+  const variants = [];
+  const seen = {};
+  const append = (candidate) => {
+    if (!candidate || seen[candidate]) return;
+    seen[candidate] = true;
+    variants.push(candidate);
+  };
+
+  append(url);
+  append(withQueryParam(url, "flag", "clash"));
+  append(withQueryParam(url, "flag", "meta"));
+  append(withQueryParam(url, "target", "clash"));
+  append(withQueryParam(url, "target", "clash-meta"));
+  append(withQueryParam(url, "client", "clash-verge-rev"));
+
+  return variants;
+}
+
+function withQueryParam(url, key, value) {
+  if (!url) return url;
+  if (new RegExp(`([?&])${escapeRegExp(key)}=`).test(url)) return url;
+  return `${url}${url.indexOf("?") === -1 ? "?" : "&"}${key}=${encodeURIComponent(value)}`;
+}
+
+function escapeRegExp(input) {
+  return input.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function requestUserInfo(request) {
+  return new Promise((resolve, reject) => {
+    const client = $httpClient[request.method];
+    if (typeof client !== "function") {
+      reject(`unsupported method: ${request.method}`);
+      return;
+    }
+
+    client(
+      {
+        url: request.url,
+        headers: request.headers,
+      },
+      (error, response) => {
+        if (error || !response) {
+          reject(error || "empty response");
+          return;
+        }
+
+        if (response.status < 200 || response.status >= 400) {
+          reject(`HTTP ${response.status}`);
+          return;
+        }
+
+        const headerKey = Object.keys(response.headers || {}).find(
+          (key) => key.toLowerCase() === "subscription-userinfo"
+        );
+
+        if (!headerKey || !response.headers[headerKey]) {
+          reject("subscription-userinfo missing");
+          return;
+        }
+
+        resolve(response.headers[headerKey]);
       }
-      if (resp.status !== 200) {
-        reject(resp.status);
-        return;
-      }
-      let header = Object.keys(resp.headers).find(
-        (key) => key.toLowerCase() === "subscription-userinfo"
-      );
-      if (header) {
-        resolve(resp.headers[header]);
-        return;
-      }
-      
-      // 兼容性优化：某些机场（如 mitce.net）需要带 flag=clash 才会返回 subscription-userinfo 头
-      if (!url.includes("flag=clash")) {
-        let fallbackUrl = url + (url.includes("?") ? "&" : "?") + "flag=clash";
-        let fallbackRequest = { headers: { "User-Agent": "clash-verge/v2.0.0" }, url: fallbackUrl };
-        $httpClient[method](fallbackRequest, (err2, resp2) => {
-          if (err2 != null) {
-             reject(err2);
-             return;
-          }
-          if (resp2.status !== 200) {
-             reject(resp2.status);
-             return;
-          }
-          let fallbackHeader = Object.keys(resp2.headers).find(
-            (key) => key.toLowerCase() === "subscription-userinfo"
-          );
-          if (fallbackHeader) {
-            resolve(resp2.headers[fallbackHeader]);
-            return;
-          }
-          reject("链接响应头不带有流量信息");
-        });
-      } else {
-        reject("链接响应头不带有流量信息");
-      }
+    );
+  });
+}
+
+function parseSubscriptionUserInfo(headerValue) {
+  const pairs = String(headerValue).match(/\w+=[\d.eE+-]+/g) || [];
+  return Object.fromEntries(
+    pairs.map((item) => {
+      const [key, value] = item.split("=");
+      return [key, Number(value)];
     })
   );
 }
 
-async function getDataInfo(url) {
-  const [err, data] = await getUserInfo(url)
-    .then((data) => [null, data])
-    .catch((err) => [err, null]);
-  if (err) {
-    console.log(err);
-    return;
-  }
-
-  return Object.fromEntries(
-    data
-      .match(/\w+=[\d.eE+-]+/g)
-      .map((item) => item.split("="))
-      .map(([k, v]) => [k, Number(v)])
-  );
+function normalizeResetDay(value) {
+  const resetDay = parseInt(value, 10);
+  return Number.isFinite(resetDay) && resetDay > 0 && resetDay <= 31 ? resetDay : null;
 }
 
-function getRmainingDays(resetDay) {
-  if (!resetDay) return;
+function inferNameFromUrl(url) {
+  const matched = String(url).match(/^https?:\/\/([^\/?#]+)/i);
+  return matched ? matched[1] : "Unnamed Subscription";
+}
 
-  let now = new Date();
-  let today = now.getDate();
-  let month = now.getMonth();
-  let year = now.getFullYear();
-  let daysInMonth;
+function getRemainingDays(resetDay) {
+  const now = new Date();
+  const currentDay = now.getDate();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
 
-  if (resetDay > today) {
-    daysInMonth = 0;
-  } else {
-    daysInMonth = new Date(year, month + 1, 0).getDate();
+  let resetDate = new Date(currentYear, currentMonth, resetDay);
+  if (currentDay >= resetDay) {
+    resetDate = new Date(currentYear, currentMonth + 1, resetDay);
   }
 
-  return daysInMonth - today + resetDay;
+  const delta = resetDate.getTime() - now.getTime();
+  return Math.max(0, Math.ceil(delta / (24 * 60 * 60 * 1000)));
 }
 
 function bytesToSize(bytes) {
-  if (bytes === 0) return "0B";
-  let k = 1024;
-  sizes = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
-  let i = Math.floor(Math.log(bytes) / Math.log(k));
-  return (bytes / Math.pow(k, i)).toFixed(2) + " " + sizes[i];
+  if (!Number.isFinite(bytes) || bytes <= 0) return "0 B";
+  const units = ["B", "KB", "MB", "GB", "TB", "PB"];
+  const power = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+  return `${(bytes / Math.pow(1024, power)).toFixed(power === 0 ? 0 : 2)} ${units[power]}`;
 }
 
-function formatTime(time) {
-  let dateObj = new Date(time);
-  let year = dateObj.getFullYear();
-  let month = dateObj.getMonth() + 1;
-  let day = dateObj.getDate();
-  return year + "年" + month + "月" + day + "日";
+function formatDate(expireValue) {
+  const timestamp = Number(expireValue);
+  const date = new Date(timestamp > 1e12 ? timestamp : timestamp * 1000);
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, "0");
+  const day = `${date.getDate()}`.padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function formatClock(date) {
+  const hours = `${date.getHours()}`.padStart(2, "0");
+  const minutes = `${date.getMinutes()}`.padStart(2, "0");
+  return `${hours}:${minutes}`;
 }
