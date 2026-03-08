@@ -70,7 +70,7 @@ const rawArgument = typeof $argument === "string" ? $argument.trim() : "";
   }
 
   $done({
-    title: `${context.panelTitle} | ${formatClock(new Date())}`,
+    title: buildPanelTitle(context),
     content: sections.join("\n\n"),
     icon: context.panelIcon,
     "icon-color": context.panelColor,
@@ -80,6 +80,7 @@ const rawArgument = typeof $argument === "string" ? $argument.trim() : "";
 function parseArguments(argument) {
   const fallback = {
     panelTitle: DEFAULT_PANEL_TITLE,
+    hideUpdateTime: false,
     panelIcon: DEFAULT_PANEL_ICON,
     panelColor: DEFAULT_PANEL_COLOR,
     slots: [],
@@ -87,12 +88,16 @@ function parseArguments(argument) {
 
   if (!argument) return fallback;
 
-  if (argument.indexOf("payload=") === 0) {
-    const payload = argument.slice("payload=".length);
+  const payloadIndex = argument.indexOf("payload=");
+  if (payloadIndex !== -1) {
+    const metaPart = payloadIndex > 0 ? argument.slice(0, payloadIndex - 1) : "";
+    const metaParams = parseKeyValueArgument(metaPart);
+    const payload = argument.slice(payloadIndex + "payload=".length);
     const slots = parseSlotPayload(payload);
     normalizeShiftedSlots(slots);
     return {
-      panelTitle: DEFAULT_PANEL_TITLE,
+      panelTitle: normalizePanelTitle(metaParams.panel_title),
+      hideUpdateTime: isOnValue(metaParams.hide_update_time),
       panelIcon: DEFAULT_PANEL_ICON,
       panelColor: DEFAULT_PANEL_COLOR,
       slots,
@@ -135,7 +140,8 @@ function parseArguments(argument) {
   normalizeShiftedSlots(slots);
 
   return {
-    panelTitle: params.panel_title || DEFAULT_PANEL_TITLE,
+    panelTitle: normalizePanelTitle(params.panel_title),
+    hideUpdateTime: isOnValue(params.hide_update_time),
     panelIcon: params.panel_icon || DEFAULT_PANEL_ICON,
     panelColor: params.panel_color || DEFAULT_PANEL_COLOR,
     slots,
@@ -186,6 +192,23 @@ function sanitizeTemplateValue(value) {
   if (/^订阅链接\d+$/i.test(decoded)) return "";
   if (/^重置日\d+$/i.test(decoded)) return "";
   return decoded;
+}
+
+function normalizePanelTitle(value) {
+  if (typeof value !== "string") return DEFAULT_PANEL_TITLE;
+  const decoded = safeDecode(value).trim();
+  return decoded;
+}
+
+function isOnValue(value) {
+  return String(value || "").trim().toLowerCase() === "on";
+}
+
+function buildPanelTitle(context) {
+  const parts = [];
+  if (context.panelTitle) parts.push(context.panelTitle);
+  if (!context.hideUpdateTime) parts.push(formatClock(new Date()));
+  return parts.join(" | ");
 }
 
 function normalizeShiftedSlots(slots) {
