@@ -113,13 +113,20 @@ function parseArguments(argument) {
   for (let index = 1; index <= MAX_SUBSCRIPTIONS; index += 1) {
     slots.push({
       name: sanitizeTemplateValue(
-        params[`title${index}`] || params[`name${index}`] || params[`NAME${index}`] || ""
+        params[`title${index}`] ||
+          params[`name${index}`] ||
+          params[`NAME${index}`] ||
+          params[`机场名称${index}`] ||
+          ""
       ),
-      url: sanitizeTemplateValue(params[`url${index}`] || params[`URL${index}`] || ""),
+      url: sanitizeTemplateValue(
+        params[`url${index}`] || params[`URL${index}`] || params[`订阅链接${index}`] || ""
+      ),
       resetDay: sanitizeTemplateValue(
         params[`resetDay${index}`] ||
           params[`reset_day${index}`] ||
           params[`RESET_Day${index}`] ||
+          params[`重置日${index}`] ||
           ""
       ),
     });
