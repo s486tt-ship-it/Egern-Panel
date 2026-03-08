@@ -9,8 +9,8 @@ const SLOT_SEPARATOR = "<<EgernPanelSlot>>";
 const FIELD_SEPARATOR = "<<EgernPanelField>>";
 const MAX_SUBSCRIPTIONS = 10;
 const DEFAULT_PANEL_TITLE = "机场订阅";
-const DEFAULT_PANEL_ICON = "antenna.radiowaves.left.and.right.circle.fill";
-const DEFAULT_PANEL_COLOR = "#00C2A8";
+const DEFAULT_PANEL_ICON = "paperplane.circle.fill";
+const DEFAULT_PANEL_COLOR = "#007AFF";
 
 const REQUEST_PROFILES = [
   {
